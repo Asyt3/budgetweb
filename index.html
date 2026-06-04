@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Пътят до 0 € · бюджет калкулатор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,400i&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<!-- Supply-chain hardening: pin this with Subresource Integrity once you have network.
+     Run: curl -sL https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js | openssl dgst -sha384 -binary | openssl base64 -A
+     then add integrity="sha384-<hash>" below. (Best: vendor the file into the vault for offline use.) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --paper:#f4efe6; --ink:#22281f; --green:#1f4d3a; --green-soft:#356048;
+    --coral:#cf5b41; --gold:#c79a3a; --line:#ddd4c4; --card:#fbf8f1;
+    --shadow:0 8px 30px rgba(34,40,31,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; color:var(--ink);
+    background:radial-gradient(1100px 560px at 78% -12%, #faf7f0, var(--paper));
+    background-attachment:fixed;
+    font-family:'Hanken Grotesk', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    padding:18px 16px 28px;
+  }
+  .wrap { max-width:980px; margin:0 auto; }
+  .display { font-family:'Fraunces', Georgia, serif; }
+
+  header { margin-bottom:1rem; }
+  h1 { font-family:'Fraunces', serif; color:var(--green); font-size:clamp(1.5rem,4vw,2.1rem); margin:.2rem 0 0; font-weight:600; letter-spacing:-.01em; line-height:1.05; }
+  h1 em { font-style:italic; color:var(--coral); }
+  .eyebrow { color:var(--green-soft); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; margin:0; }
+
+  /* entrance + hover */
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:15px;
+    padding:1rem 1.15rem; margin-bottom:.8rem;
+    transition:box-shadow .25s ease, border-color .25s ease;
+    animation:rise .55s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .card:hover { box-shadow:var(--shadow); }
+  .wrap > div:nth-of-type(1){ animation-delay:.03s; }
+  .wrap > div:nth-of-type(2){ animation-delay:.10s; }
+  .wrap > div:nth-of-type(3){ animation-delay:.17s; }
+  .wrap > div:nth-of-type(4){ animation-delay:.24s; }
+  @media (prefers-reduced-motion: reduce){ .card { animation:none; } .bar span { transition:none !important; } }
+
+  /* hero */
+  .hero { background:var(--green); color:var(--paper); border:none; position:relative; overflow:hidden;
+          display:grid; grid-template-columns:1fr; gap:1rem; box-shadow:0 12px 34px rgba(31,77,58,.18); }
+  .hero::before { content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(460px 240px at 10% -10%, rgba(255,255,255,.12), transparent 70%); }
+  .hero > * { position:relative; z-index:1; }
+  @media(min-width:680px){ .hero { grid-template-columns:auto 1fr; align-items:center; } }
+  .hero .count { font-family:'Fraunces', serif; font-size:clamp(2.6rem,8vw,3.8rem); line-height:.9; letter-spacing:-.02em; }
+  .hero .count small { font-size:1.2rem; font-style:italic; opacity:.85; }
+  .hero .sub { opacity:.82; font-size:.85rem; margin:.1rem 0; }
+  .badge { display:inline-block; margin-top:.55rem; font-size:.71rem; letter-spacing:.02em; padding:.3rem .85rem; border-radius:999px; background:var(--green-soft); }
+  .badge.warn { background:var(--coral); }
+  .chips { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+  .chip { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.08); border-radius:13px; padding:.6rem .7rem; transition:background .2s ease; }
+  .chip:hover { background:rgba(255,255,255,.15); }
+  .chip .l { font-size:.63rem; letter-spacing:.03em; opacity:.78; margin:0 0 .25rem; }
+  .chip .v { font-family:'Fraunces', serif; font-size:1.1rem; margin:0; }
+
+  h2 { font-family:'Fraunces', serif; color:var(--green); font-size:1.1rem; margin:0 0 .7rem; font-weight:600; letter-spacing:-.01em; }
+  .note { color:var(--green-soft); font-size:.76rem; margin:.65rem 0 0; line-height:1.45; }
+  .chart-box { position:relative; height:230px; width:100%; }
+  .encourage { color:var(--green); font-size:.9rem; margin:.7rem 0 0; font-weight:500; line-height:1.45; }
+
+  /* budget = freedom (donut) */
+  .budget-layout { display:grid; grid-template-columns:1fr; gap:1.1rem; align-items:center; }
+  @media(min-width:640px){ .budget-layout { grid-template-columns:200px 1fr; } }
+  .donut-wrap { position:relative; width:100%; max-width:200px; aspect-ratio:1; margin:0 auto; }
+  .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+  .donut-center .big { font-family:'Fraunces', serif; font-size:1.95rem; color:var(--green); line-height:1; letter-spacing:-.01em; }
+  .donut-center .lbl { font-size:.6rem; letter-spacing:.06em; text-transform:uppercase; color:var(--green-soft); margin-top:.28rem; max-width:7.5rem; }
+  .legend { display:flex; flex-direction:column; gap:.4rem; font-size:.82rem; color:var(--green-soft); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:.5rem; vertical-align:middle; }
+  .legend b { color:var(--ink); font-weight:600; }
+  .legend .pct { opacity:.75; }
+  .facts { list-style:none; padding:0; margin:.95rem 0 0; display:flex; flex-direction:column; gap:.5rem; }
+  .facts li { position:relative; padding-left:1.4rem; font-size:.84rem; line-height:1.45; color:var(--ink); }
+  .facts li::before { content:"✦"; position:absolute; left:0; top:.05rem; color:var(--gold); }
+
+  /* inputs */
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.7rem .8rem; }
+  @media(min-width:560px){ .grid { grid-template-columns:repeat(3,1fr); } }
+  @media(min-width:820px){ .grid { grid-template-columns:repeat(4,1fr); } }
+  label { display:flex; flex-direction:column; gap:.3rem; }
+  label .cap { font-size:.64rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--green-soft); }
+  .field { display:flex; align-items:center; background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:.45rem .65rem;
+           transition:border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+  .field:hover { border-color:var(--green-soft); }
+  .field:focus-within { border-color:var(--green); background:#fff; box-shadow:0 0 0 3px rgba(31,77,58,.12); }
+  .field input { width:100%; border:none; background:transparent; outline:none; font-size:.92rem; color:var(--ink); font-family:inherit; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type=number] { -moz-appearance:textfield; }
+  .field .suffix { font-size:.72rem; color:var(--green-soft); margin-left:.4rem; white-space:nowrap; }
+  .hint { font-size:.69rem; color:var(--green-soft); margin:.25rem 0 0; }
+  .hint b { color:var(--ink); font-weight:600; }
+  .reset { color:var(--coral); cursor:pointer; border:none; border-bottom:1px dashed var(--coral);
+           background:none; padding:0; font:inherit; }
+  .reset:hover { color:var(--green); border-color:var(--green); }
+  .reset:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:2px; }
+  .disclaimer { font-size:.7rem; color:var(--green-soft); text-align:center; margin-top:1rem; line-height:1.45; }
+  /* visually hidden but available to screen readers */
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+             clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Спокоен план · стъпка по стъпка</p>
+    <h1>Пътят до <em>0 €</em> по кредита</h1>
+  </header>
+
+  <!-- HERO -->
+  <div class="card hero">
+    <div aria-live="polite">
+      <p class="sub">Свободен от кредита след</p>
+      <div class="count" id="payoffCount">— <small>мес.</small></div>
+      <p class="sub" id="payoffDate">≈ —</p>
+      <span class="badge" id="statusBadge">по план ✓</span>
+    </div>
+    <div class="chips">
+      <div class="chip"><p class="l">Вноска / месец</p><p class="v" id="chipPayment">—</p></div>
+      <div class="chip"><p class="l">Заделям отгоре</p><p class="v" id="chipExtra">—</p></div>
+      <div class="chip"><p class="l">Спестена лихва</p><p class="v" id="chipSaved">—</p></div>
+    </div>
+  </div>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <h2>Твоите данни</h2>
+    <div class="grid">
+      <label><span class="cap">Месечна заплата (нето)</span>
+        <span class="field"><input type="number" id="salary" value="2000" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+      <label><span class="cap">Разходи за живот / месец</span>
+        <span class="field"><input type="number" id="essentials" value="1000" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">наем, храна, сметки, транспорт</span></label>
+      <label><span class="cap">Остатък по кредита</span>
+        <span class="field"><input type="number" id="principal" value="10000" step="100" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+      <label><span class="cap">Годишен лихвен % (ГПР)</span>
+        <span class="field"><input type="number" id="rate" value="5" step="0.1" min="0" max="100" inputmode="decimal"><span class="suffix">%</span></span></label>
+      <label><span class="cap">Оставащ срок</span>
+        <span class="field"><input type="number" id="term" value="120" step="1" min="1" max="600" inputmode="numeric"><span class="suffix">мес</span></span></label>
+      <label><span class="cap">Месечна вноска</span>
+        <span class="field"><input type="number" id="payment" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">по срока: <b id="suggestPay">—</b> · <button type="button" class="reset" id="resetPay">нулирай</button></span></label>
+      <label><span class="cap">Заделям отгоре / месец</span>
+        <span class="field"><input type="number" id="extra" value="0" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint" id="freeHint">разполагаеми: —</span></label>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <h2>Остатъкът по кредита пада до нула</h2>
+    <div class="chart-box"><canvas id="chart" role="img" aria-label="Графика на остатъка по кредита във времето"></canvas></div>
+    <p class="sr-only" id="chartSummary"></p>
+    <p class="encourage" id="encourage"></p>
+  </div>
+
+  <!-- BUDGET = FREEDOM -->
+  <div class="card">
+    <h2>Заплатата ти = свобода</h2>
+    <div class="budget-layout">
+      <div class="donut-wrap">
+        <canvas id="budgetChart" role="img" aria-label="Разпределение на заплатата: разходи, вноска, заделено и буфер"></canvas>
+        <div class="donut-center">
+          <span class="big" id="freedomPct">—</span>
+          <span class="lbl">за свободата ти</span>
+        </div>
+      </div>
+      <div>
+        <div class="legend" id="budgetLegend"></div>
+        <ul class="facts" id="budgetFacts"></ul>
+      </div>
+    </div>
+    <p class="note" id="budgetNote"></p>
+  </div>
+
+  <p class="disclaimer">Образователен инструмент, не финансов съвет. Лихвата по кредита може да е променлива — обновявай я при промяна. Вноската по подразбиране е анюитетна (равна) по срока; можеш да я въведеш ръчно.</p>
+
+</div>
+
+<script>
+const C = { green:'#1f4d3a', greenSoft:'#3f7a5e', coral:'#cf5b41', gold:'#c79a3a', line:'#ddd4c4', paper:'#f4efe6', ink:'#22281f' };
+const MONTHS = ['ян.','февр.','март','апр.','май','юни','юли','авг.','септ.','окт.','ноем.','дек.'];
+const now = new Date();
+const START = { y: now.getFullYear(), m: now.getMonth() };
+
+const fmt = n => Math.round(n).toLocaleString('bg-BG') + ' €';
+const monthLabel = off => {
+  const idx = START.m + off, y = START.y + Math.floor(idx/12);
+  return MONTHS[((idx%12)+12)%12] + ' ' + y;
+};
+const yearOf = off => START.y + Math.floor((START.m + off)/12);
+
+// annuity monthly payment
+function annuity(P, annualRate, n){
+  const r = annualRate/100/12;
+  if (n <= 0) return P;
+  if (r === 0) return P/n;
+  return P*r / (1 - Math.pow(1+r, -n));
+}
+
+// simulate balance month by month with a fixed monthly payment
+function simulate(P, annualRate, payment, cap=600){
+  const r = annualRate/100/12;
+  let bal = P, totalInterest = 0;
+  const rows = [bal];
+  for (let m=1; m<=cap && bal>0.005; m++){
+    const interest = bal*r;
+    totalInterest += interest;
+    bal = bal + interest - payment;
+    if (bal < 0) bal = 0;
+    rows.push(bal);
+  }
+  return { rows, payoff: rows.length-1, totalInterest, paysOff: bal<=0.005 };
+}
+
+let chart;
+let paymentTouched = false; // false = auto-fill the payment from the term; true = user typed it
+
+function render(){
+  const salary     = +document.getElementById('salary').value || 0;
+  const essentials = +document.getElementById('essentials').value || 0;
+  const P          = +document.getElementById('principal').value || 0;
+  const rate       = +document.getElementById('rate').value || 0;
+  const term       = +document.getElementById('term').value || 120;
+  let   extra      = +document.getElementById('extra').value || 0;
+
+  // monthly payment: editable. Auto-fills from the term until the user overrides it.
+  const suggested = annuity(P, rate, term);
+  const payEl = document.getElementById('payment');
+  if (!paymentTouched) payEl.value = Math.round(suggested);
+  const base = paymentTouched ? (+payEl.value || 0) : suggested;
+  document.getElementById('suggestPay').textContent = fmt(suggested);
+
+  const free = Math.max(0, salary - essentials - base);
+  document.getElementById('freeHint').textContent = 'разполагаеми: ' + fmt(free);
+
+  const plan = simulate(P, rate, base + extra);
+  const baseOnly = simulate(P, rate, base);
+  const interestSaved = Math.max(0, baseOnly.totalInterest - plan.totalInterest);
+  const monthsSaved = Math.max(0, baseOnly.payoff - plan.payoff);
+
+  // hero — when the payment can't cover the interest, the balance never reaches 0,
+  // so show a clear non-number instead of the misleading iteration cap.
+  if (plan.paysOff){
+    document.getElementById('payoffCount').innerHTML = plan.payoff + ' <small>мес.</small>';
+    document.getElementById('payoffDate').textContent = '≈ ' + monthLabel(plan.payoff);
+  } else {
+    document.getElementById('payoffCount').innerHTML = '—';
+    document.getElementById('payoffDate').textContent = 'не се изплаща при тази вноска';
+  }
+  // screen-reader text alternative for the (canvas) line chart
+  document.getElementById('chartSummary').textContent = plan.paysOff
+    ? `Остатъкът по кредита пада от ${fmt(P)} до 0 € за ${plan.payoff} месеца (≈ ${monthLabel(plan.payoff)}). Платена лихва общо ${fmt(plan.totalInterest)}.`
+    : `При текущата вноска остатъкът по кредита не намалява до 0 — вноската не покрива лихвата.`;
+  document.getElementById('chipPayment').textContent = fmt(base + extra);
+  document.getElementById('chipExtra').textContent = fmt(extra);
+  document.getElementById('chipSaved').textContent = fmt(interestSaved);
+
+  const badge = document.getElementById('statusBadge');
+  if (!plan.paysOff){
+    badge.className = 'badge warn'; badge.textContent = 'вноската не покрива лихвата — увеличи я';
+  } else if (extra > 0){
+    badge.className = 'badge'; badge.textContent = monthsSaved + ' мес. по-рано ✓';
+  } else {
+    badge.className = 'badge'; badge.textContent = 'по план ✓';
+  }
+
+  // encouragement copy (positive psychology)
+  const enc = document.getElementById('encourage');
+  if (!plan.paysOff){
+    enc.textContent = 'Засега вноската едва покрива лихвата. Дори малко отгоре започва да топи остатъка.';
+  } else if (extra > 0){
+    enc.textContent = `Само с ${fmt(extra)} отгоре месечно си свободен ${monthsSaved} месеца по-рано и спестяваш ${fmt(interestSaved)} лихва. Малкото усилие дава голям ефект.`;
+  } else if (free > 0){
+    enc.textContent = `Имаш ${fmt(free)} свободни всеки месец. Сложи част от тях в полето „заделям отгоре" и виж как датата скача напред.`;
+  } else {
+    enc.textContent = 'Изплащаш по план. Всеки месец остатъкът става по-малък — пътят до нула вече тече.';
+  }
+
+  // chart: plan line + faint "само минимум" baseline
+  const len = Math.max(plan.rows.length, baseOnly.rows.length);
+  // show a tick only at each January (year boundary); label = the year
+  const labels = Array.from({length:len}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('chart'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'само минимум', data:baseOnly.rows, borderColor:C.line, borderWidth:1.5,
+        borderDash:[5,5], pointRadius:0, tension:.25 },
+      { label:'твоят план', data:plan.rows, borderColor:C.coral, borderWidth:2.5,
+        pointRadius:0, tension:.25, fill:true,
+        backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(207,91,65,.12)';
+          const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(207,91,65,.45)'); g.addColorStop(1,'rgba(207,91,65,.03)'); return g; } },
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ labels:{ color:C.greenSoft, font:{family:'Hanken Grotesk', size:12}, usePointStyle:true, boxWidth:8 } },
+        tooltip:{ callbacks:{ title:(it)=>monthLabel(it[0].dataIndex), label:(it)=> it.dataset.label+': '+fmt(it.raw) } },
+      },
+      scales:{
+        x:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, maxRotation:0, autoSkip:false,
+            callback:function(v,i){ const l=this.getLabelForValue(v); return l || ''; } } },
+        y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, callback:v=> Math.round(v/1000)+'к' }, beginAtZero:true },
+      },
+    },
+  });
+
+  renderBudget(salary, essentials, base, extra, free, interestSaved);
+}
+
+let budgetChart;
+function renderBudget(salary, essentials, base, extra, free, interestSaved){
+  const buffer = Math.max(0, salary - essentials - base - extra);
+  const total = Math.max(1, salary);
+  const toLoan = base + extra;
+  // свобода = парите, които реално остават свободни всеки месец = буфера,
+  // т.е. заплата − разходи − вноска − заделям отгоре. Заделеното за дълга НЕ е свобода.
+  const freedom = Math.max(0, buffer);
+  const freedomPct = Math.round(freedom/total*100);
+
+  const parts = [
+    { name:'Разходи за живот', v:essentials, c:C.greenSoft },
+    { name:'Вноска по кредита', v:base,      c:C.green },
+    { name:'Заделям отгоре',   v:extra,      c:C.coral },
+    { name:'Остава буфер',     v:buffer,     c:C.gold },
+  ].filter(p=> p.v > 0.5);
+
+  // donut
+  if (budgetChart) budgetChart.destroy();
+  budgetChart = new Chart(document.getElementById('budgetChart'), {
+    type:'doughnut',
+    data:{ labels:parts.map(p=>p.name), datasets:[{
+      data:parts.map(p=>p.v), backgroundColor:parts.map(p=>p.c),
+      borderColor:C.card, borderWidth:2, hoverOffset:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'68%',
+      plugins:{ legend:{ display:false },
+        tooltip:{ callbacks:{ label:(it)=> `${it.label}: ${fmt(it.raw)} (${Math.round(it.raw/total*100)}%)` } } } },
+  });
+  document.getElementById('freedomPct').textContent = freedomPct + '%';
+
+  // legend
+  const leg = document.getElementById('budgetLegend');
+  leg.innerHTML = '';
+  parts.forEach(p=>{
+    const l = document.createElement('div');
+    l.innerHTML = `<i style="background:${p.c}"></i>${p.name} · <b>${fmt(p.v)}</b> <span class="pct">(${Math.round(p.v/total*100)}%)</span>`;
+    leg.appendChild(l);
+  });
+
+  // freedom facts (positive psychology) — show the most relevant 3
+  const facts = [];
+  facts.push(`<b>${freedomPct}%</b> (${fmt(freedom)}) остават напълно свободни всеки месец — след разходи, вноска и заделеното за кредита.`);
+  if (extra > 0) facts.push(`Заделените ${fmt(extra)} не са загуба — купуват ти по-ранна свобода без дълг.`);
+  if (interestSaved > 0) facts.push(`Спестяваш ${fmt(interestSaved)} лихва — пари, които остават при теб, не при банката.`);
+  if (toLoan > 0) facts.push(`Щом кредитът падне, тези ${fmt(toLoan)}/мес. се връщат изцяло към свободата ти.`);
+
+  const ul = document.getElementById('budgetFacts');
+  ul.innerHTML = '';
+  facts.slice(0,3).forEach(f=>{ const li=document.createElement('li'); li.innerHTML=f; ul.appendChild(li); });
+
+  const note = document.getElementById('budgetNote');
+  if (salary - essentials - base < 0){
+    note.textContent = 'Разходите и вноската надхвърлят заплатата. Виж къде можеш да свиеш живота — обикновено наем и транспорт тежат най-много.';
+  } else {
+    note.textContent = `Колкото повече от свободните ${fmt(free)} насочиш към „заделям отгоре", толкова по-бързо стигаш нулата.`;
+  }
+}
+
+// payment override: typing marks it manual; "нулирай" returns to the by-term value
+document.getElementById('payment').addEventListener('input', ()=>{ paymentTouched = true; });
+document.getElementById('resetPay').addEventListener('click', ()=>{ paymentTouched = false; render(); });
+document.querySelectorAll('input').forEach(el=> el.addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
