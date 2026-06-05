@@ -14,7 +14,8 @@
 <style>
   :root {
     --paper:#f4efe6; --ink:#22281f; --green:#1f4d3a; --green-soft:#356048;
-    --coral:#cf5b41; --gold:#c79a3a; --line:#ddd4c4; --card:#fbf8f1;
+    --coral:#cf5b41; --gold:#c79a3a; --sage:#6f8f7a; --taupe:#bcae8f;
+    --line:#ddd4c4; --card:#fbf8f1;
     --shadow:0 8px 30px rgba(34,40,31,.07);
   }
   * { box-sizing: border-box; }
@@ -44,10 +45,13 @@
   }
   .card:hover { box-shadow:var(--shadow); }
   .wrap > div:nth-of-type(1){ animation-delay:.03s; }
-  .wrap > div:nth-of-type(2){ animation-delay:.10s; }
-  .wrap > div:nth-of-type(3){ animation-delay:.17s; }
-  .wrap > div:nth-of-type(4){ animation-delay:.24s; }
-  @media (prefers-reduced-motion: reduce){ .card { animation:none; } .bar span { transition:none !important; } }
+  .wrap > div:nth-of-type(2){ animation-delay:.09s; }
+  .wrap > div:nth-of-type(3){ animation-delay:.15s; }
+  .wrap > div:nth-of-type(4){ animation-delay:.21s; }
+  .wrap > div:nth-of-type(5){ animation-delay:.27s; }
+  .wrap > div:nth-of-type(6){ animation-delay:.33s; }
+  .wrap > div:nth-of-type(7){ animation-delay:.39s; }
+  @media (prefers-reduced-motion: reduce){ .card { animation:none; } .bar span, .prog > i { transition:none !important; } }
 
   /* hero */
   .hero { background:var(--green); color:var(--paper); border:none; position:relative; overflow:hidden;
@@ -68,6 +72,7 @@
   .chip .v { font-family:'Fraunces', serif; font-size:1.1rem; margin:0; }
 
   h2 { font-family:'Fraunces', serif; color:var(--green); font-size:1.1rem; margin:0 0 .7rem; font-weight:600; letter-spacing:-.01em; }
+  h2 .h2sub { font-family:'Hanken Grotesk', sans-serif; font-weight:400; font-size:.72rem; letter-spacing:.02em; color:var(--green-soft); margin-left:.5rem; }
   .note { color:var(--green-soft); font-size:.76rem; margin:.65rem 0 0; line-height:1.45; }
   .chart-box { position:relative; height:230px; width:100%; }
   .encourage { color:var(--green); font-size:.9rem; margin:.7rem 0 0; font-weight:500; line-height:1.45; }
@@ -111,6 +116,43 @@
   /* visually hidden but available to screen readers */
   .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
              clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* segmented toggle (strategy) */
+  .seg { display:inline-flex; background:var(--paper); border:1px solid var(--line); border-radius:11px; padding:.25rem; gap:.25rem; margin-bottom:.2rem; }
+  .seg button { font:inherit; font-size:.8rem; font-weight:600; color:var(--green-soft); cursor:pointer;
+    border:none; background:none; padding:.4rem .85rem; border-radius:8px; transition:background .18s ease, color .18s ease; }
+  .seg button:hover { color:var(--green); }
+  .seg button[aria-pressed="true"] { background:var(--green); color:var(--paper); box-shadow:0 2px 8px rgba(31,77,58,.18); }
+  .seg button:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+  .seg-note { font-size:.74rem; color:var(--green-soft); margin:.55rem 0 .2rem; line-height:1.45; min-height:1.1em; }
+
+  /* growth headline */
+  .grow-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:.1rem .8rem; margin:.2rem 0 .1rem; }
+  .grow-head .big { font-family:'Fraunces', serif; font-size:clamp(2rem,6.5vw,2.9rem); color:var(--gold); line-height:1; letter-spacing:-.015em; }
+  .grow-head .at { font-size:.8rem; color:var(--green-soft); }
+  .grow-sub { color:var(--green-soft); font-size:.8rem; margin:.15rem 0 .2rem; }
+
+  /* comparison verdict */
+  .verdict { display:grid; grid-template-columns:1fr; gap:.8rem; margin-top:.2rem; }
+  @media(min-width:560px){ .verdict { grid-template-columns:1fr 1fr; } }
+  .strat { border:1px solid var(--line); border-radius:12px; padding:.85rem .95rem; background:var(--paper); position:relative; transition:border-color .2s ease, box-shadow .2s ease; }
+  .strat.win { border-color:var(--gold); box-shadow:0 0 0 2px rgba(199,154,58,.18); }
+  .strat .tag { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--green-soft); margin:0 0 .35rem; }
+  .strat .nw { font-family:'Fraunces', serif; font-size:1.5rem; color:var(--green); line-height:1; }
+  .strat .meta { font-size:.74rem; color:var(--green-soft); margin:.4rem 0 0; line-height:1.4; }
+  .strat .crown { position:absolute; top:.7rem; right:.85rem; font-size:.62rem; font-weight:600; color:var(--gold); letter-spacing:.04em; opacity:0; transition:opacity .2s ease; }
+  .strat.win .crown { opacity:1; }
+  .verdict-line { color:var(--green); font-size:.9rem; font-weight:500; margin:.85rem 0 0; line-height:1.5; }
+  .verdict-line b { color:var(--coral); }
+
+  /* progress bar (emergency fund) */
+  .prog { height:14px; border-radius:999px; background:var(--paper); border:1px solid var(--line); overflow:hidden; margin:.2rem 0 .1rem; }
+  .prog > i { display:block; height:100%; background:linear-gradient(90deg,var(--sage),var(--green-soft)); border-radius:999px;
+    width:0; transition:width .5s cubic-bezier(.2,.7,.2,1); }
+  .prog-row { display:flex; justify-content:space-between; font-size:.74rem; color:var(--green-soft); margin-top:.4rem; }
+  .prog-row b { color:var(--ink); }
+  .stab-layout { display:grid; grid-template-columns:1fr; gap:.9rem; align-items:center; }
+  @media(min-width:560px){ .stab-layout { grid-template-columns:1.3fr 1fr; } }
 </style>
 </head>
 <body>
@@ -118,7 +160,7 @@
 
   <header>
     <p class="eyebrow">Спокоен план · стъпка по стъпка</p>
-    <h1>Пътят до <em>0 €</em> по кредита</h1>
+    <h1>Пътят до <em>0 €</em> — и нагоре</h1>
   </header>
 
   <!-- HERO -->
@@ -131,8 +173,8 @@
     </div>
     <div class="chips">
       <div class="chip"><p class="l">Вноска / месец</p><p class="v" id="chipPayment">—</p></div>
-      <div class="chip"><p class="l">Заделям отгоре</p><p class="v" id="chipExtra">—</p></div>
-      <div class="chip"><p class="l">Спестена лихва</p><p class="v" id="chipSaved">—</p></div>
+      <div class="chip"><p class="l">Инвестирам / месец</p><p class="v" id="chipInvest">—</p></div>
+      <div class="chip"><p class="l">Богатство след <span id="chipHorizonYrs">20</span>г.</p><p class="v" id="chipWealth">—</p></div>
     </div>
   </div>
 
@@ -141,14 +183,15 @@
     <h2>Твоите данни</h2>
     <div class="grid">
       <label><span class="cap">Месечна заплата (нето)</span>
-        <span class="field"><input type="number" id="salary" value="2000" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+        <span class="field"><input type="number" id="salary" value="1650" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
       <label><span class="cap">Разходи за живот / месец</span>
-        <span class="field"><input type="number" id="essentials" value="1000" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="field"><input type="number" id="essentials" value="800" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span>
         <span class="hint">наем, храна, сметки, транспорт</span></label>
       <label><span class="cap">Остатък по кредита</span>
-        <span class="field"><input type="number" id="principal" value="10000" step="100" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+        <span class="field"><input type="number" id="principal" value="13000" step="100" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
       <label><span class="cap">Годишен лихвен % (ГПР)</span>
-        <span class="field"><input type="number" id="rate" value="5" step="0.1" min="0" max="100" inputmode="decimal"><span class="suffix">%</span></span></label>
+        <span class="field"><input type="number" id="rate" value="4.4" step="0.1" min="0" max="100" inputmode="decimal"><span class="suffix">%</span></span>
+        <span class="hint">променлива — обновявай я</span></label>
       <label><span class="cap">Оставащ срок</span>
         <span class="field"><input type="number" id="term" value="120" step="1" min="1" max="600" inputmode="numeric"><span class="suffix">мес</span></span></label>
       <label><span class="cap">Месечна вноска</span>
@@ -157,10 +200,23 @@
       <label><span class="cap">Заделям отгоре / месец</span>
         <span class="field"><input type="number" id="extra" value="0" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
         <span class="hint" id="freeHint">разполагаеми: —</span></label>
+      <label><span class="cap">Инвестирам / месец</span>
+        <span class="field"><input type="number" id="investMonthly" value="300" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">25% препоръка: <b id="suggestInvest">—</b></span></label>
+      <label><span class="cap">Вече инвестирано</span>
+        <span class="field"><input type="number" id="investStart" value="40" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">Trading 212 · акции, злато, S&amp;P 500</span></label>
+      <label><span class="cap">Авариен фонд сега</span>
+        <span class="field"><input type="number" id="emergencyNow" value="0" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+      <label><span class="cap">За авариен фонд / мес</span>
+        <span class="field"><input type="number" id="emergencyMonthly" value="150" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">15% препоръка: <b id="suggestEmergency">—</b></span></label>
+      <label><span class="cap">Хоризонт</span>
+        <span class="field"><input type="number" id="horizon" value="20" step="1" min="1" max="50" inputmode="numeric"><span class="suffix">год</span></span></label>
     </div>
   </div>
 
-  <!-- CHART -->
+  <!-- LOAN CHART -->
   <div class="card">
     <h2>Остатъкът по кредита пада до нула</h2>
     <div class="chart-box"><canvas id="chart" role="img" aria-label="Графика на остатъка по кредита във времето"></canvas></div>
@@ -168,12 +224,67 @@
     <p class="encourage" id="encourage"></p>
   </div>
 
+  <!-- GROWTH / INVESTMENTS -->
+  <div class="card">
+    <h2>Парите ти растат <span class="h2sub">Растеж · 25%</span></h2>
+
+    <div class="seg" role="group" aria-label="Стратегия">
+      <button type="button" id="modeParallel" aria-pressed="true">Паралелно</button>
+      <button type="button" id="modeSprint" aria-pressed="false">Спринт първо</button>
+    </div>
+    <p class="seg-note" id="modeNote"></p>
+
+    <div class="grow-head">
+      <span class="big" id="growValue">—</span>
+      <span class="at">при <b>7%</b> очаквана доходност · след <span id="growYears">20</span> год.</span>
+    </div>
+    <p class="grow-sub" id="growSub">—</p>
+
+    <div class="chart-box"><canvas id="investChart" role="img" aria-label="Прогноза за стойността на инвестициите при 4, 7 и 10% доходност"></canvas></div>
+    <p class="sr-only" id="investSummary"></p>
+    <p class="note">Три сценария, не обещание: <b>предпазливо 4%</b> · <b>очаквано 7%</b> · <b>оптимистично 10%</b>. Историческата средна на широк пазар (S&amp;P 500) е ~10% преди инфлация — но никое десетилетие не е гарантирано. Времето на пазара бие размера на вноската.</p>
+  </div>
+
+  <!-- LOAN vs INVEST -->
+  <div class="card">
+    <h2>Кредит или инвестиции? <span class="h2sub">при 7% · хоризонт <span id="cmpYears">20</span> год.</span></h2>
+    <div class="verdict">
+      <div class="strat" id="stratSprint">
+        <span class="crown">★ повече</span>
+        <p class="tag">Спринт първо</p>
+        <div class="nw" id="nwSprint">—</div>
+        <p class="meta" id="metaSprint">—</p>
+      </div>
+      <div class="strat" id="stratParallel">
+        <span class="crown">★ повече</span>
+        <p class="tag">Паралелно</p>
+        <div class="nw" id="nwParallel">—</div>
+        <p class="meta" id="metaParallel">—</p>
+      </div>
+    </div>
+    <p class="verdict-line" id="verdictLine"></p>
+    <p class="note">Чисто богатство = инвестиции − остатък по кредита, след хоризонта. Лихвата ти (4.4%) е <i>гарантираната</i> доходност от плащане отгоре по кредита; пазарът се <i>очаква</i> да даде повече, но с риск и колебания.</p>
+  </div>
+
+  <!-- STABILITY / EMERGENCY FUND -->
+  <div class="card">
+    <h2>Авариен фонд <span class="h2sub">Стабилност · 15%</span></h2>
+    <div class="stab-layout">
+      <div>
+        <div class="prog"><i id="emergencyBar"></i></div>
+        <div class="prog-row"><span>сега <b id="emergencyNowLbl">—</b></span><span>цел <b id="emergencyTarget">—</b></span></div>
+        <p class="note" id="emergencyNote"></p>
+      </div>
+      <ul class="facts" id="emergencyFacts"></ul>
+    </div>
+  </div>
+
   <!-- BUDGET = FREEDOM -->
   <div class="card">
     <h2>Заплатата ти = свобода</h2>
     <div class="budget-layout">
       <div class="donut-wrap">
-        <canvas id="budgetChart" role="img" aria-label="Разпределение на заплатата: разходи, вноска, заделено и буфер"></canvas>
+        <canvas id="budgetChart" role="img" aria-label="Разпределение на заплатата: разходи, вноска, инвестиции, авариен фонд и буфер"></canvas>
         <div class="donut-center">
           <span class="big" id="freedomPct">—</span>
           <span class="lbl">за свободата ти</span>
@@ -187,17 +298,24 @@
     <p class="note" id="budgetNote"></p>
   </div>
 
-  <p class="disclaimer">Образователен инструмент, не финансов съвет. Лихвата по кредита може да е променлива — обновявай я при промяна. Вноската по подразбиране е анюитетна (равна) по срока; можеш да я въведеш ръчно.</p>
+  <p class="disclaimer">Образователен инструмент, не финансов съвет. Лихвата по кредита е променлива — обновявай я при промяна. Прогнозите за инвестиции са оценки при постоянна доходност; реалните пазари се колебаят и доходността не е гарантирана. Вноската по подразбиране е анюитетна (равна) по срока.</p>
 
 </div>
 
 <script>
-const C = { green:'#1f4d3a', greenSoft:'#3f7a5e', coral:'#cf5b41', gold:'#c79a3a', line:'#ddd4c4', paper:'#f4efe6', ink:'#22281f' };
+const C = { green:'#1f4d3a', greenSoft:'#3f7a5e', coral:'#cf5b41', gold:'#c79a3a', sage:'#6f8f7a', taupe:'#bcae8f', line:'#ddd4c4', paper:'#f4efe6', ink:'#22281f' };
 const MONTHS = ['ян.','февр.','март','апр.','май','юни','юли','авг.','септ.','окт.','ноем.','дек.'];
+const SCENARIOS = [
+  { r:4,  label:'предпазливо 4%', color:C.sage,  width:1.5 },
+  { r:7,  label:'очаквано 7%',    color:C.coral, width:2.5 },
+  { r:10, label:'оптимистично 10%', color:C.gold, width:1.5 },
+];
+const EXPECTED_R = 7; // the headline scenario
 const now = new Date();
 const START = { y: now.getFullYear(), m: now.getMonth() };
 
 const fmt = n => Math.round(n).toLocaleString('bg-BG') + ' €';
+const fmtK = n => n >= 10000 ? Math.round(n/1000).toLocaleString('bg-BG') + ' хил. €' : fmt(n);
 const monthLabel = off => {
   const idx = START.m + off, y = START.y + Math.floor(idx/12);
   return MONTHS[((idx%12)+12)%12] + ' ' + y;
@@ -212,7 +330,7 @@ function annuity(P, annualRate, n){
   return P*r / (1 - Math.pow(1+r, -n));
 }
 
-// simulate balance month by month with a fixed monthly payment
+// simulate loan balance month by month with a fixed monthly payment
 function simulate(P, annualRate, payment, cap=600){
   const r = annualRate/100/12;
   let bal = P, totalInterest = 0;
@@ -227,50 +345,78 @@ function simulate(P, annualRate, payment, cap=600){
   return { rows, payoff: rows.length-1, totalInterest, paysOff: bal<=0.005 };
 }
 
-let chart;
+// project investments month by month; contribFn(m) returns the contribution made in month m
+function projectInvest(start, annualReturn, months, contribFn){
+  const mr = annualReturn/100/12;
+  let bal = start, contributed = start;
+  const rows = [bal];
+  for (let m=1; m<=months; m++){
+    bal *= (1+mr);
+    const c = contribFn(m);
+    bal += c; contributed += c;
+    rows.push(bal);
+  }
+  return { rows, contributed, final: bal };
+}
+
+// pad a loan-balance array out to `months` (post-payoff balance is 0)
+function padLoan(rows, months){
+  const out = rows.slice(0, months+1);
+  while (out.length < months+1) out.push(0);
+  return out;
+}
+
+let chart, investChart, budgetChart;
 let paymentTouched = false; // false = auto-fill the payment from the term; true = user typed it
+let mode = 'parallel';      // 'parallel' | 'sprint'
+
+const $ = id => document.getElementById(id);
 
 function render(){
-  const salary     = +document.getElementById('salary').value || 0;
-  const essentials = +document.getElementById('essentials').value || 0;
-  const P          = +document.getElementById('principal').value || 0;
-  const rate       = +document.getElementById('rate').value || 0;
-  const term       = +document.getElementById('term').value || 120;
-  let   extra      = +document.getElementById('extra').value || 0;
+  const salary     = +$('salary').value || 0;
+  const essentials = +$('essentials').value || 0;
+  const P          = +$('principal').value || 0;
+  const rate       = +$('rate').value || 0;
+  const term       = +$('term').value || 120;
+  const extra      = +$('extra').value || 0;
+  const investMo   = +$('investMonthly').value || 0;
+  const investStart= +$('investStart').value || 0;
+  const emNow      = +$('emergencyNow').value || 0;
+  const emMo       = +$('emergencyMonthly').value || 0;
+  const horizonY   = Math.max(1, +$('horizon').value || 20);
+  const H          = horizonY * 12; // horizon in months
 
   // monthly payment: editable. Auto-fills from the term until the user overrides it.
   const suggested = annuity(P, rate, term);
-  const payEl = document.getElementById('payment');
+  const payEl = $('payment');
   if (!paymentTouched) payEl.value = Math.round(suggested);
   const base = paymentTouched ? (+payEl.value || 0) : suggested;
-  document.getElementById('suggestPay').textContent = fmt(suggested);
+  $('suggestPay').textContent = fmt(suggested);
+  $('suggestInvest').textContent = fmt(salary * 0.25);
+  $('suggestEmergency').textContent = fmt(salary * 0.15);
 
-  const free = Math.max(0, salary - essentials - base);
-  document.getElementById('freeHint').textContent = 'разполагаеми: ' + fmt(free);
+  const free = Math.max(0, salary - essentials - base - extra - investMo - emMo);
+  $('freeHint').textContent = 'разполагаеми: ' + fmt(Math.max(0, salary - essentials - base));
 
+  // ---- loan, as the user has it set (base + extra to loan) ----
   const plan = simulate(P, rate, base + extra);
   const baseOnly = simulate(P, rate, base);
   const interestSaved = Math.max(0, baseOnly.totalInterest - plan.totalInterest);
   const monthsSaved = Math.max(0, baseOnly.payoff - plan.payoff);
 
-  // hero — when the payment can't cover the interest, the balance never reaches 0,
-  // so show a clear non-number instead of the misleading iteration cap.
+  // hero — when the payment can't cover the interest, the balance never reaches 0
   if (plan.paysOff){
-    document.getElementById('payoffCount').innerHTML = plan.payoff + ' <small>мес.</small>';
-    document.getElementById('payoffDate').textContent = '≈ ' + monthLabel(plan.payoff);
+    $('payoffCount').innerHTML = plan.payoff + ' <small>мес.</small>';
+    $('payoffDate').textContent = '≈ ' + monthLabel(plan.payoff);
   } else {
-    document.getElementById('payoffCount').innerHTML = '—';
-    document.getElementById('payoffDate').textContent = 'не се изплаща при тази вноска';
+    $('payoffCount').innerHTML = '—';
+    $('payoffDate').textContent = 'не се изплаща при тази вноска';
   }
-  // screen-reader text alternative for the (canvas) line chart
-  document.getElementById('chartSummary').textContent = plan.paysOff
+  $('chartSummary').textContent = plan.paysOff
     ? `Остатъкът по кредита пада от ${fmt(P)} до 0 € за ${plan.payoff} месеца (≈ ${monthLabel(plan.payoff)}). Платена лихва общо ${fmt(plan.totalInterest)}.`
     : `При текущата вноска остатъкът по кредита не намалява до 0 — вноската не покрива лихвата.`;
-  document.getElementById('chipPayment').textContent = fmt(base + extra);
-  document.getElementById('chipExtra').textContent = fmt(extra);
-  document.getElementById('chipSaved').textContent = fmt(interestSaved);
 
-  const badge = document.getElementById('statusBadge');
+  const badge = $('statusBadge');
   if (!plan.paysOff){
     badge.className = 'badge warn'; badge.textContent = 'вноската не покрива лихвата — увеличи я';
   } else if (extra > 0){
@@ -279,24 +425,81 @@ function render(){
     badge.className = 'badge'; badge.textContent = 'по план ✓';
   }
 
-  // encouragement copy (positive psychology)
-  const enc = document.getElementById('encourage');
+  // encouragement copy
+  const enc = $('encourage');
   if (!plan.paysOff){
     enc.textContent = 'Засега вноската едва покрива лихвата. Дори малко отгоре започва да топи остатъка.';
   } else if (extra > 0){
-    enc.textContent = `Само с ${fmt(extra)} отгоре месечно си свободен ${monthsSaved} месеца по-рано и спестяваш ${fmt(interestSaved)} лихва. Малкото усилие дава голям ефект.`;
-  } else if (free > 0){
-    enc.textContent = `Имаш ${fmt(free)} свободни всеки месец. Сложи част от тях в полето „заделям отгоре" и виж как датата скача напред.`;
+    enc.textContent = `Само с ${fmt(extra)} отгоре месечно си свободен ${monthsSaved} месеца по-рано и спестяваш ${fmt(interestSaved)} лихва.`;
   } else {
-    enc.textContent = 'Изплащаш по план. Всеки месец остатъкът става по-малък — пътят до нула вече тече.';
+    enc.textContent = `Изплащаш по план. Свободен си ${monthLabel(plan.payoff)} — тогава вноската се влива в инвестициите.`;
   }
 
-  // chart: plan line + faint "само минимум" baseline
+  drawLoanChart(plan, baseOnly, P);
+
+  // ---- two strategies, compared over the full horizon ----
+  // discretionary pool = всичко над base, което насочваш към богатство/предсрочно
+  const pool = extra + investMo;
+
+  // SPRINT: целият pool отива по кредита до изплащане, после base+pool в инвестиции
+  const sprintLoan = simulate(P, rate, base + pool, Math.max(600, H));
+  const tSprint = sprintLoan.payoff;
+  const sprintLoanPad = padLoan(sprintLoan.rows, H);
+
+  // PARALLEL: кредитът върви на base+extra; инвестираш investMo от ден 1; след изплащане
+  //           освободеното (base+extra) също влиза в инвестициите
+  const parLoan = simulate(P, rate, base + extra, Math.max(600, H));
+  const tPar = parLoan.payoff;
+  const parLoanPad = padLoan(parLoan.rows, H);
+
+  const sprintContrib = m => (m > tSprint) ? (base + pool) : 0;
+  const parContrib    = m => (m > tPar) ? (base + extra + investMo) : investMo;
+
+  // scenario projections for the SELECTED mode (for the chart)
+  const selContrib = mode === 'sprint' ? sprintContrib : parContrib;
+  const selLoanPad = mode === 'sprint' ? sprintLoanPad : parLoanPad;
+  const scenarioRuns = SCENARIOS.map(s => ({ s, run: projectInvest(investStart, s.r, H, selContrib) }));
+  const expectedRun = scenarioRuns.find(x => x.s.r === EXPECTED_R).run;
+
+  // growth headline (expected scenario)
+  $('growValue').textContent = fmt(expectedRun.final);
+  $('growYears').textContent = horizonY;
+  $('chipHorizonYrs').textContent = horizonY;
+  $('cmpYears').textContent = horizonY;
+  $('growSub').innerHTML = `Вложени общо <b>${fmt(expectedRun.contributed)}</b> · растеж <b>${fmt(expectedRun.final - expectedRun.contributed)}</b>`;
+  $('chipPayment').textContent = fmt(base + extra);
+  $('chipInvest').textContent = fmt(mode === 'sprint' ? 0 : investMo);
+  $('chipWealth').textContent = fmtK(expectedRun.final);
+
+  drawInvestChart(scenarioRuns, H);
+  $('investSummary').textContent =
+    `При ${EXPECTED_R}% годишно, инвестиции от ${fmt(investStart)} начало растат до ${fmt(expectedRun.final)} за ${horizonY} години. ` +
+    `Предпазливо (4%): ${fmt(scenarioRuns[0].run.final)}. Оптимистично (10%): ${fmt(scenarioRuns[2].run.final)}.`;
+
+  // mode note
+  $('modeNote').textContent = mode === 'sprint'
+    ? `Спринт: всичко над вноската (${fmt(pool)}) бие по кредита${tSprint? ' до ' + monthLabel(tSprint):''}, после ${fmt(base + pool)}/мес. влизат в инвестиции.`
+    : `Паралелно: кредитът върви по план, а ${fmt(investMo)}/мес. инвестираш от днес${tPar? '. След ' + monthLabel(tPar) + ' и вноската се влива в инвестициите':''}.`;
+
+  // ---- comparison: net worth at horizon (expected 7%) ----
+  const sprintInvest7 = projectInvest(investStart, EXPECTED_R, H, sprintContrib);
+  const parInvest7    = projectInvest(investStart, EXPECTED_R, H, parContrib);
+  const nwSprint = sprintInvest7.final - sprintLoanPad[H];
+  const nwPar    = parInvest7.final - parLoanPad[H];
+  renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintInvest7, parInvest7, interestSaved);
+
+  // ---- emergency fund ----
+  renderEmergency(essentials, emNow, emMo);
+
+  // ---- budget donut ----
+  renderBudget(salary, essentials, base, extra, investMo, emMo, free, interestSaved, expectedRun.final, horizonY);
+}
+
+function drawLoanChart(plan, baseOnly, P){
   const len = Math.max(plan.rows.length, baseOnly.rows.length);
-  // show a tick only at each January (year boundary); label = the year
   const labels = Array.from({length:len}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
   if (chart) chart.destroy();
-  chart = new Chart(document.getElementById('chart'), {
+  chart = new Chart($('chart'), {
     type:'line',
     data:{ labels, datasets:[
       { label:'само минимум', data:baseOnly.rows, borderColor:C.line, borderWidth:1.5,
@@ -315,35 +518,109 @@ function render(){
       },
       scales:{
         x:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, maxRotation:0, autoSkip:false,
-            callback:function(v,i){ const l=this.getLabelForValue(v); return l || ''; } } },
+            callback:function(v){ return this.getLabelForValue(v) || ''; } } },
         y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, callback:v=> Math.round(v/1000)+'к' }, beginAtZero:true },
       },
     },
   });
-
-  renderBudget(salary, essentials, base, extra, free, interestSaved);
 }
 
-let budgetChart;
-function renderBudget(salary, essentials, base, extra, free, interestSaved){
-  const buffer = Math.max(0, salary - essentials - base - extra);
+function drawInvestChart(scenarioRuns, H){
+  const labels = Array.from({length:H+1}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
+  const datasets = scenarioRuns.map(({s, run})=> ({
+    label:s.label, data:run.rows, borderColor:s.color, borderWidth:s.width,
+    pointRadius:0, tension:.25,
+    fill: s.r === EXPECTED_R,
+    backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(207,91,65,.10)';
+      const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(207,91,65,.30)'); g.addColorStop(1,'rgba(207,91,65,.02)'); return g; },
+  }));
+  if (investChart) investChart.destroy();
+  investChart = new Chart($('investChart'), {
+    type:'line',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ labels:{ color:C.greenSoft, font:{family:'Hanken Grotesk', size:12}, usePointStyle:true, boxWidth:8 } },
+        tooltip:{ callbacks:{ title:(it)=>monthLabel(it[0].dataIndex), label:(it)=> it.dataset.label+': '+fmt(it.raw) } },
+      },
+      scales:{
+        x:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, maxRotation:0, autoSkip:false,
+            callback:function(v){ return this.getLabelForValue(v) || ''; } } },
+        y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, callback:v=> v>=1000? Math.round(v/1000)+'к' : v }, beginAtZero:true },
+      },
+    },
+  });
+}
+
+function renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintInvest, parInvest, interestSaved){
+  $('nwSprint').textContent = fmt(nwSprint);
+  $('nwParallel').textContent = fmt(nwPar);
+  $('metaSprint').innerHTML = (sprintLoan.paysOff ? `Свободен ${monthLabel(tSprint)}` : 'кредитът не се изплаща') +
+    ` · вложено ${fmt(sprintInvest.contributed)}`;
+  $('metaParallel').innerHTML = (parLoan.paysOff ? `Свободен ${monthLabel(tPar)}` : 'кредитът не се изплаща') +
+    ` · вложено ${fmt(parInvest.contributed)}`;
+
+  const sEl = $('stratSprint'), pEl = $('stratParallel');
+  sEl.classList.toggle('win', nwSprint >= nwPar);
+  pEl.classList.toggle('win', nwPar > nwSprint);
+
+  const diff = Math.abs(nwPar - nwSprint);
+  const line = $('verdictLine');
+  if (diff < 1){
+    line.textContent = 'Двете стратегии излизат почти наравно при 7%.';
+  } else if (nwPar > nwSprint){
+    line.innerHTML = `При 7% <b>паралелно</b> води с ${fmt(diff)} повече чисто богатство — защото пазарът (~7%) изпреварва лихвата по кредита (4.4%). Но спринтът те прави без дълг по-рано: по-малко риск, повече спокойствие.`;
+  } else {
+    line.innerHTML = `При 7% <b>спринтът</b> води с ${fmt(diff)} — изплащаш гарантираните 4.4% и инвестираш повече по-късно. Колкото по-висока е лихвата, толкова повече печели спринтът.`;
+  }
+}
+
+function renderEmergency(essentials, emNow, emMo){
+  const target = essentials * 5;
+  const pct = target > 0 ? Math.min(100, Math.round(emNow/target*100)) : 0;
+  $('emergencyBar').style.width = pct + '%';
+  $('emergencyNowLbl').textContent = fmt(emNow);
+  $('emergencyTarget').textContent = fmt(target);
+
+  const note = $('emergencyNote');
+  if (target <= 0){
+    note.textContent = 'Въведи разходите за живот, за да изчисля целта (разходи × 5 месеца).';
+  } else if (emNow >= target){
+    note.innerHTML = `Фондът е пълен. Тези <b>${fmt(emMo)}/мес.</b> вече могат да отиват към инвестиции.`;
+  } else if (emMo > 0){
+    const monthsLeft = Math.ceil((target - emNow)/emMo);
+    note.innerHTML = `Цел: разходи × 5 = <b>${fmt(target)}</b>. При ${fmt(emMo)}/мес. си готов след <b>${monthsLeft} мес.</b> (${monthLabel(monthsLeft)}).`;
+  } else {
+    note.innerHTML = `Цел: разходи × 5 = <b>${fmt(target)}</b>. Задели нещо месечно, за да я напълниш.`;
+  }
+
+  const facts = [
+    'Лесно достъпен (до 24 ч.), нулев риск, в спестовна сметка с лихва — не в акции.',
+    'Изтеглиш ли — връщаш на следваща заплата. Това пази инвестициите от продажба в лош момент.',
+  ];
+  const ul = $('emergencyFacts');
+  ul.innerHTML = '';
+  facts.forEach(f=>{ const li=document.createElement('li'); li.innerHTML=f; ul.appendChild(li); });
+}
+
+function renderBudget(salary, essentials, base, extra, investMo, emMo, free, interestSaved, wealth, horizonY){
+  const buffer = Math.max(0, salary - essentials - base - extra - investMo - emMo);
   const total = Math.max(1, salary);
-  const toLoan = base + extra;
-  // свобода = парите, които реално остават свободни всеки месец = буфера,
-  // т.е. заплата − разходи − вноска − заделям отгоре. Заделеното за дълга НЕ е свобода.
-  const freedom = Math.max(0, buffer);
-  const freedomPct = Math.round(freedom/total*100);
+  const freedomPct = Math.round(buffer/total*100);
 
   const parts = [
-    { name:'Разходи за живот', v:essentials, c:C.greenSoft },
-    { name:'Вноска по кредита', v:base,      c:C.green },
-    { name:'Заделям отгоре',   v:extra,      c:C.coral },
-    { name:'Остава буфер',     v:buffer,     c:C.gold },
+    { name:'Разходи за живот',  v:essentials, c:C.greenSoft },
+    { name:'Вноска по кредита', v:base,       c:C.green },
+    { name:'Заделям отгоре',    v:extra,      c:C.coral },
+    { name:'Инвестиции',        v:investMo,   c:C.gold },
+    { name:'Авариен фонд',      v:emMo,       c:C.sage },
+    { name:'Остава буфер',      v:buffer,     c:C.taupe },
   ].filter(p=> p.v > 0.5);
 
-  // donut
   if (budgetChart) budgetChart.destroy();
-  budgetChart = new Chart(document.getElementById('budgetChart'), {
+  budgetChart = new Chart($('budgetChart'), {
     type:'doughnut',
     data:{ labels:parts.map(p=>p.name), datasets:[{
       data:parts.map(p=>p.v), backgroundColor:parts.map(p=>p.c),
@@ -352,10 +629,9 @@ function renderBudget(salary, essentials, base, extra, free, interestSaved){
       plugins:{ legend:{ display:false },
         tooltip:{ callbacks:{ label:(it)=> `${it.label}: ${fmt(it.raw)} (${Math.round(it.raw/total*100)}%)` } } } },
   });
-  document.getElementById('freedomPct').textContent = freedomPct + '%';
+  $('freedomPct').textContent = freedomPct + '%';
 
-  // legend
-  const leg = document.getElementById('budgetLegend');
+  const leg = $('budgetLegend');
   leg.innerHTML = '';
   parts.forEach(p=>{
     const l = document.createElement('div');
@@ -363,28 +639,37 @@ function renderBudget(salary, essentials, base, extra, free, interestSaved){
     leg.appendChild(l);
   });
 
-  // freedom facts (positive psychology) — show the most relevant 3
   const facts = [];
-  facts.push(`<b>${freedomPct}%</b> (${fmt(freedom)}) остават напълно свободни всеки месец — след разходи, вноска и заделеното за кредита.`);
-  if (extra > 0) facts.push(`Заделените ${fmt(extra)} не са загуба — купуват ти по-ранна свобода без дълг.`);
+  facts.push(`<b>${freedomPct}%</b> (${fmt(buffer)}) остават напълно свободни всеки месец — буфер след всичко заделено.`);
+  if (investMo > 0) facts.push(`Инвестираните ${fmt(investMo)}/мес. се очаква да станат <b>${fmt(wealth)}</b> за ${horizonY} г. — това е свобода, не разход.`);
   if (interestSaved > 0) facts.push(`Спестяваш ${fmt(interestSaved)} лихва — пари, които остават при теб, не при банката.`);
-  if (toLoan > 0) facts.push(`Щом кредитът падне, тези ${fmt(toLoan)}/мес. се връщат изцяло към свободата ти.`);
+  if (extra > 0) facts.push(`Заделените ${fmt(extra)} отгоре купуват по-ранна свобода без дълг.`);
 
-  const ul = document.getElementById('budgetFacts');
+  const ul = $('budgetFacts');
   ul.innerHTML = '';
   facts.slice(0,3).forEach(f=>{ const li=document.createElement('li'); li.innerHTML=f; ul.appendChild(li); });
 
-  const note = document.getElementById('budgetNote');
+  const note = $('budgetNote');
   if (salary - essentials - base < 0){
     note.textContent = 'Разходите и вноската надхвърлят заплатата. Виж къде можеш да свиеш живота — обикновено наем и транспорт тежат най-много.';
+  } else if (buffer < 0.5){
+    note.textContent = 'Цялата заплата е разпределена до стотинка. Ако стане тясно, намали първо инвестициите, не аварийния фонд.';
   } else {
-    note.textContent = `Колкото повече от свободните ${fmt(free)} насочиш към „заделям отгоре", толкова по-бързо стигаш нулата.`;
+    note.textContent = `Имаш ${fmt(buffer)} свободен буфер. Можеш да го насочиш към инвестиции, аварийния фонд или предсрочно по кредита.`;
   }
 }
 
-// payment override: typing marks it manual; "нулирай" returns to the by-term value
-document.getElementById('payment').addEventListener('input', ()=>{ paymentTouched = true; });
-document.getElementById('resetPay').addEventListener('click', ()=>{ paymentTouched = false; render(); });
+// ---- events ----
+$('payment').addEventListener('input', ()=>{ paymentTouched = true; });
+$('resetPay').addEventListener('click', ()=>{ paymentTouched = false; render(); });
+function setMode(m){
+  mode = m;
+  $('modeParallel').setAttribute('aria-pressed', String(m==='parallel'));
+  $('modeSprint').setAttribute('aria-pressed', String(m==='sprint'));
+  render();
+}
+$('modeParallel').addEventListener('click', ()=> setMode('parallel'));
+$('modeSprint').addEventListener('click', ()=> setMode('sprint'));
 document.querySelectorAll('input').forEach(el=> el.addEventListener('input', render));
 render();
 </script>
