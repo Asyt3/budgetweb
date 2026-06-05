@@ -844,7 +844,7 @@ function renderBudget(salary, essentials, base, extra, investMo, emMo, free, int
 
   const facts = [];
   facts.push(`<b>${freedomPct}%</b> (${fmt(buffer)}) остават напълно свободни всеки месец — буфер след всичко заделено.`);
-  if (investEff > 0) facts.push(`Инвестираните ${fmt(investEff)}/мес. се очаква да станат <b>${fmt(wealth)}</b> за ${horizonY} г. — това е свобода, не разход.`);
+  if (wealth > 0.5) facts.push(`По плана парите ти растат до <b>${fmt(wealth)}</b> за ${horizonY} г. — от вноските ти и от освободената вноска след изплащане. Това е свобода, не разход.`);
   if (interestSaved > 0) facts.push(`Спестяваш ${fmt(interestSaved)} лихва — пари, които остават при теб, не при банката.`);
   if (extraEff > 0) facts.push(sprint
     ? `Целите ${fmt(extraEff)} отгоре бият по кредита — без дълг по-рано, после всичко влиза в инвестиции.`
