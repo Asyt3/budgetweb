@@ -153,6 +153,36 @@
   .prog-row b { color:var(--ink); }
   .stab-layout { display:grid; grid-template-columns:1fr; gap:.9rem; align-items:center; }
   @media(min-width:560px){ .stab-layout { grid-template-columns:1.3fr 1fr; } }
+
+  /* collapsible advanced assumptions */
+  details.adv { margin-top:.9rem; border-top:1px dashed var(--line); padding-top:.7rem; }
+  details.adv > summary { cursor:pointer; list-style:none; font-size:.7rem; font-weight:600;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--green-soft);
+    display:inline-flex; align-items:center; gap:.4rem; padding:.25rem 0; }
+  details.adv > summary::-webkit-details-marker { display:none; }
+  details.adv > summary::before { content:"▸"; transition:transform .2s ease; display:inline-block; }
+  details.adv[open] > summary::before { transform:rotate(90deg); }
+  details.adv > summary:focus-visible { outline:2px solid var(--green); outline-offset:3px; border-radius:3px; }
+  details.adv .grid { margin-top:.7rem; }
+
+  /* scenario toggle chips (keyboard-accessible mirror of the chart legend) */
+  .toggle-row { display:flex; flex-wrap:wrap; gap:.4rem; margin:.1rem 0 .6rem; }
+  .toggle { font:inherit; font-size:.74rem; font-weight:600; cursor:pointer; color:var(--green-soft);
+    background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:.32rem .7rem;
+    display:inline-flex; align-items:center; gap:.4rem; transition:background .18s ease, color .18s ease, border-color .18s ease, opacity .18s ease; }
+  .toggle .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .toggle:hover { border-color:var(--green-soft); }
+  .toggle[aria-pressed="false"] { opacity:.42; text-decoration:line-through; }
+  .toggle:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+
+  /* freedom-number readout */
+  .fi-note { color:var(--green); font-size:.82rem; margin:.55rem 0 .2rem; line-height:1.45; font-weight:500; }
+  .fi-note b { color:var(--gold); }
+  .fi-note.out { color:var(--green-soft); font-weight:400; }
+
+  /* graceful failure if the chart library is blocked */
+  .chart-fallback { display:flex; align-items:center; justify-content:center; height:100%;
+    text-align:center; color:var(--green-soft); font-size:.8rem; padding:1rem; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -203,17 +233,29 @@
       <label><span class="cap">Инвестирам / месец</span>
         <span class="field"><input type="number" id="investMonthly" value="300" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
         <span class="hint">25% препоръка: <b id="suggestInvest">—</b></span></label>
-      <label><span class="cap">Вече инвестирано</span>
-        <span class="field"><input type="number" id="investStart" value="40" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-        <span class="hint">Trading 212 · акции, злато, S&amp;P 500</span></label>
       <label><span class="cap">Авариен фонд сега</span>
         <span class="field"><input type="number" id="emergencyNow" value="0" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
       <label><span class="cap">За авариен фонд / мес</span>
         <span class="field"><input type="number" id="emergencyMonthly" value="150" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
         <span class="hint">15% препоръка: <b id="suggestEmergency">—</b></span></label>
-      <label><span class="cap">Хоризонт</span>
-        <span class="field"><input type="number" id="horizon" value="20" step="1" min="1" max="50" inputmode="numeric"><span class="suffix">год</span></span></label>
     </div>
+
+    <details class="adv">
+      <summary>Разширени допускания</summary>
+      <div class="grid">
+        <label><span class="cap">Хоризонт</span>
+          <span class="field"><input type="number" id="horizon" value="20" step="1" min="1" max="50" inputmode="numeric"><span class="suffix">год</span></span></label>
+        <label><span class="cap">Вече инвестирано</span>
+          <span class="field"><input type="number" id="investStart" value="40" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+          <span class="hint">Trading 212 · акции, злато, S&amp;P 500</span></label>
+        <label><span class="cap">Инфлация / год</span>
+          <span class="field"><input type="number" id="inflation" value="2.5" step="0.1" min="0" max="20" inputmode="decimal"><span class="suffix">%</span></span>
+          <span class="hint">за изчисляване на „днешни пари“</span></label>
+        <label><span class="cap">Покачвам вноската / год</span>
+          <span class="field"><input type="number" id="escalate" value="0" step="1" min="0" max="50" inputmode="decimal"><span class="suffix">%</span></span>
+          <span class="hint">при всяко покачване на доходите</span></label>
+      </div>
+    </details>
   </div>
 
   <!-- LOAN CHART -->
@@ -228,9 +270,15 @@
   <div class="card">
     <h2>Парите ти растат <span class="h2sub">Растеж · 25%</span></h2>
 
-    <div class="seg" role="group" aria-label="Стратегия">
-      <button type="button" id="modeParallel" aria-pressed="true">Паралелно</button>
-      <button type="button" id="modeSprint" aria-pressed="false">Спринт първо</button>
+    <div style="display:flex; flex-wrap:wrap; gap:.5rem .9rem; align-items:center;">
+      <div class="seg" role="group" aria-label="Стратегия">
+        <button type="button" id="modeParallel" aria-pressed="true">Паралелно</button>
+        <button type="button" id="modeSprint" aria-pressed="false">Спринт първо</button>
+      </div>
+      <div class="seg" role="group" aria-label="Изглед на сумите">
+        <button type="button" id="viewNominal" aria-pressed="true">Номинални</button>
+        <button type="button" id="viewReal" aria-pressed="false">Днешни пари</button>
+      </div>
     </div>
     <p class="seg-note" id="modeNote"></p>
 
@@ -239,6 +287,9 @@
       <span class="at">при <b>7%</b> очаквана доходност · след <span id="growYears">20</span> год.</span>
     </div>
     <p class="grow-sub" id="growSub">—</p>
+    <p class="fi-note" id="fiNote"></p>
+
+    <div class="toggle-row" id="scenarioToggles" role="group" aria-label="Покажи или скрий сценарии в графиката"></div>
 
     <div class="chart-box"><canvas id="investChart" role="img" aria-label="Прогноза за стойността на инвестициите при 4, 7 и 10% доходност"></canvas></div>
     <p class="sr-only" id="investSummary"></p>
@@ -369,22 +420,34 @@ function padLoan(rows, months){
 let chart, investChart, budgetChart;
 let paymentTouched = false; // false = auto-fill the payment from the term; true = user typed it
 let mode = 'parallel';      // 'parallel' | 'sprint'
+let view = 'nominal';       // 'nominal' | 'real' (today's-money, inflation-adjusted)
+const hidden = {};          // which growth-chart series are toggled off (by label)
+const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const HAS_CHART = typeof Chart !== 'undefined'; // graceful if the CDN library is blocked
 
 const $ = id => document.getElementById(id);
 
 function render(){
-  const salary     = +$('salary').value || 0;
-  const essentials = +$('essentials').value || 0;
-  const P          = +$('principal').value || 0;
-  const rate       = +$('rate').value || 0;
-  const term       = +$('term').value || 120;
-  const extra      = +$('extra').value || 0;
-  const investMo   = +$('investMonthly').value || 0;
-  const investStart= +$('investStart').value || 0;
-  const emNow      = +$('emergencyNow').value || 0;
-  const emMo       = +$('emergencyMonthly').value || 0;
+  // clamp money inputs at 0 — a negative salary/loan/contribution is nonsensical
+  const pos = id => Math.max(0, +$(id).value || 0);
+  const salary     = pos('salary');
+  const essentials = pos('essentials');
+  const P          = pos('principal');
+  const rate       = Math.max(0, +$('rate').value || 0);
+  const term       = Math.max(1, +$('term').value || 120);
+  const extra      = pos('extra');
+  const investMo   = pos('investMonthly');
+  const investStart= pos('investStart');
+  const emNow      = pos('emergencyNow');
+  const emMo       = pos('emergencyMonthly');
   const horizonY   = Math.max(1, +$('horizon').value || 20);
   const H          = horizonY * 12; // horizon in months
+  const infl       = Math.min(20, Math.max(0, +$('inflation').value || 0));
+  const esc        = Math.min(50, Math.max(0, +$('escalate').value || 0));
+  const inflM      = infl/100/12;
+  const toReal     = (val, m) => val / Math.pow(1 + inflM, m);              // nominal € at month m → today's money
+  const show       = (val, m) => view === 'real' ? toReal(val, m) : val;   // display helper (m in months)
+  const escMo      = m => Math.pow(1 + esc/100, Math.floor((m-1)/12));      // contribution multiplier, steps up yearly
 
   // monthly payment: editable. Auto-fills from the term until the user overrides it.
   const suggested = annuity(P, rate, term);
@@ -452,8 +515,9 @@ function render(){
   const tPar = parLoan.payoff;
   const parLoanPad = padLoan(parLoan.rows, H);
 
-  const sprintContrib = m => (m > tSprint) ? (base + pool) : 0;
-  const parContrib    = m => (m > tPar) ? (base + extra + investMo) : investMo;
+  // the voluntary monthly invest (investMo) escalates yearly; the freed-up loan payment does not
+  const sprintContrib = m => (m > tSprint) ? (base + extra + investMo*escMo(m)) : 0;
+  const parContrib    = m => (m > tPar ? base + extra : 0) + investMo*escMo(m);
 
   // scenario projections for the SELECTED mode (for the chart)
   const selContrib = mode === 'sprint' ? sprintContrib : parContrib;
@@ -461,20 +525,41 @@ function render(){
   const scenarioRuns = SCENARIOS.map(s => ({ s, run: projectInvest(investStart, s.r, H, selContrib) }));
   const expectedRun = scenarioRuns.find(x => x.s.r === EXPECTED_R).run;
 
-  // growth headline (expected scenario)
-  $('growValue').textContent = fmt(expectedRun.final);
+  // growth headline (expected scenario) — respects the nominal/real toggle
+  const finalShown = show(expectedRun.final, H);
+  $('growValue').textContent = fmt(finalShown);
   $('growYears').textContent = horizonY;
   $('chipHorizonYrs').textContent = horizonY;
   $('cmpYears').textContent = horizonY;
-  $('growSub').innerHTML = `Вложени общо <b>${fmt(expectedRun.contributed)}</b> · растеж <b>${fmt(expectedRun.final - expectedRun.contributed)}</b>`;
+  $('growSub').innerHTML = `Вложени общо <b>${fmt(expectedRun.contributed)}</b> · растеж <b>${fmt(expectedRun.final - expectedRun.contributed)}</b>`
+    + (view === 'real' ? ' · <i>в днешни пари</i>' : '');
   $('chipPayment').textContent = fmt(base + extra);
   $('chipInvest').textContent = fmt(mode === 'sprint' ? 0 : investMo);
-  $('chipWealth').textContent = fmtK(expectedRun.final);
+  $('chipWealth').textContent = fmtK(finalShown);
 
-  drawInvestChart(scenarioRuns, H);
+  // ---- freedom number (4% rule): annual expenses × 25, expressed in today's money ----
+  const FI = essentials * 12 * 25;
+  let fiMonth = -1;
+  for (let m = 0; m <= H; m++){ if (toReal(expectedRun.rows[m], m) >= FI){ fiMonth = m; break; } }
+  const fiEl = $('fiNote');
+  if (FI <= 0){
+    fiEl.className = 'fi-note out';
+    fiEl.textContent = 'Въведи разходи за живот, за да изчисля числото на свободата (разходи × 12 × 25).';
+  } else if (fiMonth >= 0){
+    fiEl.className = 'fi-note';
+    fiEl.innerHTML = `🏁 Числото на свободата (разходи×25 = <b>${fmt(FI)}</b>) — достигаш го ~<b>${monthLabel(fiMonth)}</b>`
+      + ` (год. ${Math.round(fiMonth/12)} при 7%, в днешни пари).`;
+  } else {
+    fiEl.className = 'fi-note out';
+    fiEl.innerHTML = `🏁 Числото на свободата = <b>${fmt(FI)}</b> (разходи×25). Извън хоризонта при тази вноска`
+      + ` — увеличи вноската, годишното покачване или хоризонта.`;
+  }
+
+  drawInvestChart(scenarioRuns, H, FI, inflM);
   $('investSummary').textContent =
-    `При ${EXPECTED_R}% годишно, инвестиции от ${fmt(investStart)} начало растат до ${fmt(expectedRun.final)} за ${horizonY} години. ` +
-    `Предпазливо (4%): ${fmt(scenarioRuns[0].run.final)}. Оптимистично (10%): ${fmt(scenarioRuns[2].run.final)}.`;
+    `При ${EXPECTED_R}% годишно, инвестиции от ${fmt(investStart)} начало растат до ${fmt(finalShown)} за ${horizonY} години`
+    + `${view === 'real' ? ' (в днешни пари)' : ''}. ` +
+    `Предпазливо (4%): ${fmt(show(scenarioRuns[0].run.final, H))}. Оптимистично (10%): ${fmt(show(scenarioRuns[2].run.final, H))}.`;
 
   // mode note
   $('modeNote').textContent = mode === 'sprint'
@@ -484,18 +569,19 @@ function render(){
   // ---- comparison: net worth at horizon (expected 7%) ----
   const sprintInvest7 = projectInvest(investStart, EXPECTED_R, H, sprintContrib);
   const parInvest7    = projectInvest(investStart, EXPECTED_R, H, parContrib);
-  const nwSprint = sprintInvest7.final - sprintLoanPad[H];
-  const nwPar    = parInvest7.final - parLoanPad[H];
+  const nwSprint = show(sprintInvest7.final - sprintLoanPad[H], H);
+  const nwPar    = show(parInvest7.final - parLoanPad[H], H);
   renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintInvest7, parInvest7, interestSaved);
 
   // ---- emergency fund ----
   renderEmergency(essentials, emNow, emMo);
 
   // ---- budget donut ----
-  renderBudget(salary, essentials, base, extra, investMo, emMo, free, interestSaved, expectedRun.final, horizonY);
+  renderBudget(salary, essentials, base, extra, investMo, emMo, free, interestSaved, expectedRun.final, horizonY, mode);
 }
 
 function drawLoanChart(plan, baseOnly, P){
+  if (!HAS_CHART) return;
   const len = Math.max(plan.rows.length, baseOnly.rows.length);
   const labels = Array.from({length:len}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
   if (chart) chart.destroy();
@@ -511,6 +597,7 @@ function drawLoanChart(plan, baseOnly, P){
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
+      animation: REDUCE ? false : { duration:550 },
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ labels:{ color:C.greenSoft, font:{family:'Hanken Grotesk', size:12}, usePointStyle:true, boxWidth:8 } },
@@ -525,24 +612,36 @@ function drawLoanChart(plan, baseOnly, P){
   });
 }
 
-function drawInvestChart(scenarioRuns, H){
+function drawInvestChart(scenarioRuns, H, FI, inflM){
+  if (!HAS_CHART) return;
+  const disp = (v, m) => view === 'real' ? v / Math.pow(1 + inflM, m) : v; // per-point display value
   const labels = Array.from({length:H+1}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
   const datasets = scenarioRuns.map(({s, run})=> ({
-    label:s.label, data:run.rows, borderColor:s.color, borderWidth:s.width,
-    pointRadius:0, tension:.25,
+    label:s.label, data:run.rows.map((v,i)=>disp(v,i)), borderColor:s.color, borderWidth:s.width,
+    pointRadius:0, tension:.25, hidden: !!hidden[s.label],
     fill: s.r === EXPECTED_R,
     backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(207,91,65,.10)';
       const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(207,91,65,.30)'); g.addColorStop(1,'rgba(207,91,65,.02)'); return g; },
   }));
+  // freedom-number line: flat in real view, inflation-grown in nominal view (so the crossover stays honest)
+  if (FI > 0){
+    const fiData = Array.from({length:H+1}, (_,i)=> view === 'real' ? FI : FI * Math.pow(1 + inflM, i));
+    datasets.push({ label:'🏁 Свобода', data:fiData, borderColor:C.gold, borderWidth:1.5,
+      borderDash:[6,4], pointRadius:0, fill:false, hidden: !!hidden['🏁 Свобода'] });
+  }
   if (investChart) investChart.destroy();
   investChart = new Chart($('investChart'), {
     type:'line',
     data:{ labels, datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
+      animation: REDUCE ? false : { duration:550 },
       interaction:{ mode:'index', intersect:false },
       plugins:{
-        legend:{ labels:{ color:C.greenSoft, font:{family:'Hanken Grotesk', size:12}, usePointStyle:true, boxWidth:8 } },
+        legend:{
+          // keep the legend-click delight, but persist it so an input change doesn't reset visibility
+          onClick:(e, item)=>{ const lbl = item.text; hidden[lbl] = !hidden[lbl]; render(); },
+          labels:{ color:C.greenSoft, font:{family:'Hanken Grotesk', size:12}, usePointStyle:true, boxWidth:8 } },
         tooltip:{ callbacks:{ title:(it)=>monthLabel(it[0].dataIndex), label:(it)=> it.dataset.label+': '+fmt(it.raw) } },
       },
       scales:{
@@ -551,6 +650,28 @@ function drawInvestChart(scenarioRuns, H){
         y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, callback:v=> v>=1000? Math.round(v/1000)+'к' : v }, beginAtZero:true },
       },
     },
+  });
+  buildScenarioToggles(datasets);
+}
+
+// keyboard-accessible mirror of the chart legend — buttons screen readers and Tab can reach
+function buildScenarioToggles(datasets){
+  const box = $('scenarioToggles');
+  if (!box) return;
+  box.innerHTML = '';
+  datasets.forEach(ds=>{
+    const visible = !hidden[ds.label];
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'toggle';
+    b.setAttribute('aria-pressed', String(visible));
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = ds.borderColor;
+    b.appendChild(dot);
+    b.appendChild(document.createTextNode(ds.label));
+    b.addEventListener('click', ()=>{ hidden[ds.label] = !hidden[ds.label]; render(); });
+    box.appendChild(b);
   });
 }
 
@@ -605,30 +726,36 @@ function renderEmergency(essentials, emNow, emMo){
   facts.forEach(f=>{ const li=document.createElement('li'); li.innerHTML=f; ul.appendChild(li); });
 }
 
-function renderBudget(salary, essentials, base, extra, investMo, emMo, free, interestSaved, wealth, horizonY){
+function renderBudget(salary, essentials, base, extra, investMo, emMo, free, interestSaved, wealth, horizonY, mode){
   const buffer = Math.max(0, salary - essentials - base - extra - investMo - emMo);
   const total = Math.max(1, salary);
   const freedomPct = Math.round(buffer/total*100);
+  // in sprint mode the invest money goes at the loan first, so label the cashflow honestly
+  const sprint = mode === 'sprint';
+  const extraEff  = sprint ? extra + investMo : extra;
+  const investEff = sprint ? 0 : investMo;
 
   const parts = [
     { name:'Разходи за живот',  v:essentials, c:C.greenSoft },
     { name:'Вноска по кредита', v:base,       c:C.green },
-    { name:'Заделям отгоре',    v:extra,      c:C.coral },
-    { name:'Инвестиции',        v:investMo,   c:C.gold },
+    { name: sprint ? 'Към кредита (спринт)' : 'Заделям отгоре', v:extraEff, c:C.coral },
+    { name:'Инвестиции',        v:investEff,  c:C.gold },
     { name:'Авариен фонд',      v:emMo,       c:C.sage },
     { name:'Остава буфер',      v:buffer,     c:C.taupe },
   ].filter(p=> p.v > 0.5);
 
+  if (HAS_CHART){
   if (budgetChart) budgetChart.destroy();
   budgetChart = new Chart($('budgetChart'), {
     type:'doughnut',
     data:{ labels:parts.map(p=>p.name), datasets:[{
       data:parts.map(p=>p.v), backgroundColor:parts.map(p=>p.c),
       borderColor:C.card, borderWidth:2, hoverOffset:6 }] },
-    options:{ responsive:true, maintainAspectRatio:false, cutout:'68%',
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', animation: REDUCE ? false : { duration:550 },
       plugins:{ legend:{ display:false },
         tooltip:{ callbacks:{ label:(it)=> `${it.label}: ${fmt(it.raw)} (${Math.round(it.raw/total*100)}%)` } } } },
   });
+  }
   $('freedomPct').textContent = freedomPct + '%';
 
   const leg = $('budgetLegend');
@@ -641,9 +768,11 @@ function renderBudget(salary, essentials, base, extra, investMo, emMo, free, int
 
   const facts = [];
   facts.push(`<b>${freedomPct}%</b> (${fmt(buffer)}) остават напълно свободни всеки месец — буфер след всичко заделено.`);
-  if (investMo > 0) facts.push(`Инвестираните ${fmt(investMo)}/мес. се очаква да станат <b>${fmt(wealth)}</b> за ${horizonY} г. — това е свобода, не разход.`);
+  if (investEff > 0) facts.push(`Инвестираните ${fmt(investEff)}/мес. се очаква да станат <b>${fmt(wealth)}</b> за ${horizonY} г. — това е свобода, не разход.`);
   if (interestSaved > 0) facts.push(`Спестяваш ${fmt(interestSaved)} лихва — пари, които остават при теб, не при банката.`);
-  if (extra > 0) facts.push(`Заделените ${fmt(extra)} отгоре купуват по-ранна свобода без дълг.`);
+  if (extraEff > 0) facts.push(sprint
+    ? `Целите ${fmt(extraEff)} отгоре бият по кредита — без дълг по-рано, после всичко влиза в инвестиции.`
+    : `Заделените ${fmt(extraEff)} отгоре купуват по-ранна свобода без дълг.`);
 
   const ul = $('budgetFacts');
   ul.innerHTML = '';
@@ -670,7 +799,20 @@ function setMode(m){
 }
 $('modeParallel').addEventListener('click', ()=> setMode('parallel'));
 $('modeSprint').addEventListener('click', ()=> setMode('sprint'));
+function setView(v){
+  view = v;
+  $('viewNominal').setAttribute('aria-pressed', String(v === 'nominal'));
+  $('viewReal').setAttribute('aria-pressed', String(v === 'real'));
+  render();
+}
+$('viewNominal').addEventListener('click', ()=> setView('nominal'));
+$('viewReal').addEventListener('click', ()=> setView('real'));
 document.querySelectorAll('input').forEach(el=> el.addEventListener('input', render));
+if (!HAS_CHART){
+  document.querySelectorAll('.chart-box').forEach(b=>{
+    b.innerHTML = '<div class="chart-fallback">Графиките не се заредиха (библиотеката е блокирана). Числата по-горе остават валидни.</div>';
+  });
+}
 render();
 </script>
 </body>
