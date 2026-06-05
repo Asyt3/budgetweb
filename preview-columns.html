@@ -184,6 +184,37 @@
   .chart-fallback { display:flex; align-items:center; justify-content:center; height:100%;
     text-align:center; color:var(--green-soft); font-size:.8rem; padding:1rem; line-height:1.5; }
 
+  /* investments — per-holding list */
+  .hold { border:1px solid var(--line); border-radius:11px; padding:.6rem .65rem; margin-bottom:.55rem; background:var(--paper); }
+  .hold-top { display:flex; gap:.5rem; align-items:center; margin-bottom:.5rem; }
+  .h-name { flex:1; min-width:0; background:#fff; border:1px solid var(--line); border-radius:8px;
+            padding:.5rem .6rem; font:inherit; font-size:.92rem; color:var(--ink); }
+  .h-name:focus-visible { outline:2px solid var(--green); outline-offset:1px; }
+  .h-del { flex:none; width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:#fff;
+           color:var(--coral); cursor:pointer; font-size:.8rem; line-height:1; }
+  .h-del:hover { border-color:var(--coral); }
+  .h-del:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+  .hold-fields { display:grid; grid-template-columns:repeat(3,1fr); gap:.4rem; }
+  .hold-fields .field { padding:.4rem .5rem; min-height:0; }
+  .hold-fields .field input { font-size:.9rem; }
+  .hold-fields .suffix { font-size:.58rem; margin-left:.25rem; }
+  .addhold { font:inherit; font-size:.78rem; font-weight:600; color:var(--green); cursor:pointer;
+             background:none; border:1px dashed var(--green-soft); border-radius:8px; padding:.45rem .85rem; }
+  .addhold:hover { background:rgba(31,77,58,.06); }
+  .addhold:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+  #investTotal { margin-top:.6rem; }
+  #investTotal b { color:var(--ink); }
+
+  /* "how is this calculated" breakdown */
+  .calc-explain { margin-top:.5rem; }
+  .calc-grid { margin-top:.6rem; }
+  .cb-row { display:flex; justify-content:space-between; gap:1rem; font-size:.82rem; color:var(--green-soft);
+            padding:.34rem 0; border-bottom:1px dashed var(--line); }
+  .cb-row b { color:var(--ink); font-weight:600; }
+  .cb-row.total b { color:var(--green); }
+  .cb-row.grand { border-bottom:none; font-size:.9rem; margin-top:.15rem; }
+  .cb-row.grand b { color:var(--gold); font-family:'Fraunces', serif; font-size:1.15rem; }
+
   /* ---------- light visual refresh (shared by both prototypes) ---------- */
   body { padding:24px 18px 44px; }
   .wrap { max-width:1060px; }
@@ -273,14 +304,12 @@
         <span class="hint" id="freeHint">разполагаеми: —</span></label>
         </div>
       </div>
-      <div class="group">
-        <p class="subhead">Инвестиции</p>
-        <div class="grid">
-        <label><span class="cap">Инвестирам / месец</span>
-        <span class="field"><input type="number" id="investMonthly" value="300" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-        <span class="hint">25% препоръка: <b id="suggestInvest">—</b></span></label>
-        </div>
-      </div>
+      <div class="group" id="investGroup">
+      <p class="subhead">Инвестиции — по холдинг</p>
+      <div id="holdings"></div>
+      <button type="button" class="addhold" id="addHolding">+ добави инвестиция</button>
+      <p class="hint" id="investTotal">—</p>
+    </div>
       <div class="group">
         <p class="subhead">Стабилност</p>
         <div class="grid">
@@ -347,20 +376,25 @@
 
     <div class="grow-head">
       <span class="big" id="growValue">—</span>
-      <span class="at">при <b>7%</b> очаквана доходност · след <span id="growYears">20</span> год.</span>
+      <span class="at">при <b id="growRate">7</b>% очаквана доходност (твоят микс) · след <span id="growYears">20</span> год.</span>
     </div>
     <p class="grow-sub" id="growSub">—</p>
     <p class="note" id="freedNote" style="display:none"></p>
     <p class="fi-note" id="fiNote"></p>
 
+    <details class="adv calc-explain">
+      <summary>Как се смята това?</summary>
+      <div class="calc-grid" id="calcBreakdown"></div>
+    </details>
+
     <div class="toggle-row" id="scenarioToggles" role="group" aria-label="Покажи или скрий сценарии в графиката"></div>
 
     <div class="chart-box"><canvas id="investChart" role="img" aria-label="Прогноза за стойността на инвестициите при 4, 7 и 10% доходност"></canvas></div>
     <p class="sr-only" id="investSummary"></p>
-    <p class="note">Три сценария, не обещание: <b>предпазливо 4%</b> · <b>очаквано 7%</b> · <b>оптимистично 10%</b>. Историческата средна на широк пазар (S&amp;P 500) е ~10% преди инфлация — но никое десетилетие не е гарантирано. Времето на пазара бие размера на вноската.</p>
+    <p class="note">Три сценария, не обещание: всяка инвестиция расте по своята очаквана доходност (<b>очаквано</b>), а <b>предпазливо</b> и <b>оптимистично</b> са −3% / +3% върху нея. Доходностите са исторически средни (виж „г. ср.“ за периода), не гаранция — никое десетилетие не е сигурно. Времето на пазара бие размера на вноската.</p>
   </div>
     <div class="card">
-    <h2>Кредит или инвестиции? <span class="h2sub">при 7% · хоризонт <span id="cmpYears">20</span> год.</span></h2>
+    <h2>Кредит или инвестиции? <span class="h2sub">при микс ~<span id="cmpRate">7</span>% · хоризонт <span id="cmpYears">20</span> год.</span></h2>
     <div class="verdict">
       <div class="strat" id="stratSprint">
         <span class="crown">★ повече</span>
@@ -418,12 +452,12 @@
 <script>
 const C = { green:'#1f4d3a', greenSoft:'#3f7a5e', coral:'#cf5b41', gold:'#c79a3a', sage:'#6f8f7a', taupe:'#bcae8f', line:'#ddd4c4', paper:'#f4efe6', ink:'#22281f' };
 const MONTHS = ['ян.','февр.','март','апр.','май','юни','юли','авг.','септ.','окт.','ноем.','дек.'];
-const SCENARIOS = [
-  { r:4,  label:'предпазливо 4%', color:C.sage,  width:1.5 },
-  { r:7,  label:'очаквано 7%',    color:C.coral, width:2.5 },
-  { r:10, label:'оптимистично 10%', color:C.gold, width:1.5 },
+// scenario bands: each holding's APY is shifted by these deltas. 0 = your actual mix.
+const SHIFTS = [
+  { d:-3, color:C.sage,  width:1.5 },
+  { d: 0, color:C.coral, width:2.5 },
+  { d:+3, color:C.gold,  width:1.5 },
 ];
-const EXPECTED_R = 7; // the headline scenario
 const now = new Date();
 const START = { y: now.getFullYear(), m: now.getMonth() };
 
@@ -479,6 +513,65 @@ function padLoan(rows, months){
   return out;
 }
 
+// Project a PORTFOLIO: each holding grows at its own APY (+shift). The freed loan
+// payment (freedPer, after payoff) and the starting balance are split across holdings
+// in proportion to each one's monthly contribution. Rows/contributed/final are summed.
+function projectMix(holdings, shift, months, payoff, sprintMode, escFn, freedPer, investStart){
+  const total = holdings.reduce((s,h)=> s + h.monthly, 0);
+  const n = holdings.length || 1;
+  const rows = new Array(months+1).fill(0);
+  let contributed = 0, final = 0;
+  holdings.forEach(h => {
+    const w = total > 0 ? h.monthly/total : 1/n;          // weight for freed payment + start
+    const start = investStart * w;
+    const r = projectInvest(start, h.apy + shift, months, m => {
+      const vol  = sprintMode ? (m > payoff ? h.monthly*escFn(m) : 0) : h.monthly*escFn(m);
+      const freed = (m > payoff ? freedPer : 0) * w;
+      return vol + freed;
+    });
+    for (let m=0; m<=months; m++) rows[m] += r.rows[m];
+    contributed += r.contributed; final += r.final;
+  });
+  return { rows, contributed, final };
+}
+
+// read the holdings list from the DOM (all values coerced; negatives clamped)
+function readHoldings(){
+  return Array.from(document.querySelectorAll('#holdings .hold')).map(w => ({
+    name: (w.querySelector('.h-name').value || '').trim(),
+    monthly: Math.max(0, +w.querySelector('.h-amt').value || 0),
+    apy: Math.max(0, +w.querySelector('.h-apy').value || 0),
+    years: Math.max(0, +w.querySelector('.h-yrs').value || 0),
+  }));
+}
+
+// build one holding row (name + monthly + apy + averaging-period), DOM-built to avoid any injection
+function makeHoldField(cls, val, suffix, step){
+  const lab = document.createElement('label'); lab.className = 'hold-f';
+  const f = document.createElement('span'); f.className = 'field';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.className = cls; inp.value = val; inp.min = '0'; inp.step = step; inp.inputMode = 'decimal';
+  const sfx = document.createElement('span'); sfx.className = 'suffix'; sfx.textContent = suffix;
+  f.appendChild(inp); f.appendChild(sfx); lab.appendChild(f);
+  return lab;
+}
+function makeHoldRow(h){
+  const wrap = document.createElement('div'); wrap.className = 'hold';
+  const top = document.createElement('div'); top.className = 'hold-top';
+  const name = document.createElement('input');
+  name.type = 'text'; name.className = 'h-name'; name.value = h.name || ''; name.placeholder = 'Име (напр. S&P 500)';
+  const del = document.createElement('button');
+  del.type = 'button'; del.className = 'h-del'; del.setAttribute('aria-label', 'Премахни инвестицията'); del.textContent = '✕';
+  del.addEventListener('click', () => { wrap.remove(); render(); });
+  top.appendChild(name); top.appendChild(del);
+  const fields = document.createElement('div'); fields.className = 'hold-fields';
+  fields.appendChild(makeHoldField('h-amt', h.monthly, '€/мес', '25'));
+  fields.appendChild(makeHoldField('h-apy', h.apy, '% год.', '0.5'));
+  fields.appendChild(makeHoldField('h-yrs', h.years, 'г. ср.', '1'));
+  wrap.appendChild(top); wrap.appendChild(fields);
+  return wrap;
+}
+
 let chart, investChart, budgetChart;
 let paymentTouched = false; // false = auto-fill the payment from the term; true = user typed it
 let mode = 'parallel';      // 'parallel' | 'sprint'
@@ -499,7 +592,11 @@ function render(){
   const rate       = Math.max(0, +$('rate').value || 0);
   const term       = Math.max(1, +$('term').value || 120);
   const extra      = pos('extra');
-  const investMo   = pos('investMonthly');
+  const holdings   = readHoldings();
+  const investMo   = holdings.reduce((s,h)=> s + h.monthly, 0);   // total voluntary monthly across holdings
+  const blended    = investMo > 0
+    ? holdings.reduce((s,h)=> s + h.monthly*h.apy, 0) / investMo  // contribution-weighted average APY
+    : (holdings.length ? holdings.reduce((s,h)=> s + h.apy, 0)/holdings.length : 7);
   const investStart= pos('investStart');
   const emNow      = pos('emergencyNow');
   const emMo       = pos('emergencyMonthly');
@@ -518,7 +615,6 @@ function render(){
   if (!paymentTouched) payEl.value = Math.round(suggested);
   const base = paymentTouched ? (+payEl.value || 0) : suggested;
   $('suggestPay').textContent = fmt(suggested);
-  $('suggestInvest').textContent = fmt(salary * 0.25);
   $('suggestEmergency').textContent = fmt(salary * 0.15);
 
   const free = Math.max(0, salary - essentials - base - extra - investMo - emMo);
@@ -578,28 +674,36 @@ function render(){
   const tPar = parLoan.payoff;
   const parLoanPad = padLoan(parLoan.rows, H);
 
-  // the voluntary monthly invest (investMo) escalates yearly; the freed-up loan payment does not
-  const sprintContrib = m => (m > tSprint) ? (base + extra + investMo*escMo(m)) : 0;
-  const parContrib    = m => (m > tPar ? base + extra : 0) + investMo*escMo(m);
-
-  // scenario projections for the SELECTED mode (for the chart)
-  const selContrib = mode === 'sprint' ? sprintContrib : parContrib;
+  // scenario projections for the SELECTED mode — each holding grown at its own APY (shifted by the band).
+  // The voluntary monthly invest escalates yearly; the freed-up loan payment does not.
   const selLoanPad = mode === 'sprint' ? sprintLoanPad : parLoanPad;
-  const scenarioRuns = SCENARIOS.map(s => ({ s, run: projectInvest(investStart, s.r, H, selContrib) }));
-  const expectedRun = scenarioRuns.find(x => x.s.r === EXPECTED_R).run;
+  const selPay     = mode === 'sprint' ? tSprint : tPar;
+  const freedPer   = base + extra;                       // loan payment freed after payoff
+  const hUse       = holdings.length ? holdings : [{ name:'', monthly:0, apy:blended, years:0 }];
+  const lblFor = d => d === 0 ? `очаквано (~${blended.toFixed(1)}%)`
+                    : (d < 0 ? 'предпазливо (−3%)' : 'оптимистично (+3%)');
+  const scenarioRuns = SHIFTS.map(sh => ({
+    s: { label: lblFor(sh.d), color: sh.color, width: sh.width, d: sh.d },
+    run: projectMix(hUse, sh.d, H, selPay, mode === 'sprint', escMo, freedPer, investStart),
+  }));
+  const expectedRun = scenarioRuns.find(x => x.s.d === 0).run;
 
   // growth headline (expected scenario) — respects the nominal/real toggle
   const finalShown = show(expectedRun.final, H);
   $('growValue').textContent = fmt(finalShown);
+  $('growRate').textContent = blended.toFixed(1);
+  $('cmpRate').textContent = blended.toFixed(1);
   $('growYears').textContent = horizonY;
   $('chipHorizonYrs').textContent = horizonY;
   $('cmpYears').textContent = horizonY;
   $('growSub').innerHTML = `Вложени общо <b>${fmt(expectedRun.contributed)}</b> · растеж <b>${fmt(expectedRun.final - expectedRun.contributed)}</b>`
     + (view === 'real' ? ' · <i>в днешни пари</i>' : '');
 
+  // holdings total + weighted return, under the list
+  $('investTotal').innerHTML = `Общо <b>${fmt(investMo)}</b>/мес · претеглена доходност <b>~${blended.toFixed(1)}%</b> · 25% препоръка: ${fmt(salary*0.25)}`;
+
   // transparency: how much of the total contributed is the loan payment redirected after payoff
-  const selPayoff = mode === 'sprint' ? tSprint : tPar;
-  const freedContrib = Math.max(0, H - selPayoff) * (base + extra);
+  const freedContrib = Math.max(0, H - selPay) * freedPer;
   const freedEl = $('freedNote');
   if (freedContrib > 0.5){
     freedEl.style.display = '';
@@ -610,6 +714,16 @@ function render(){
   $('chipPayment').textContent = fmt(base + extra);
   $('chipInvest').textContent = fmt(mode === 'sprint' ? 0 : investMo);
   $('chipWealth').textContent = fmtK(finalShown);
+
+  // "Как се смята това?" — deposits → growth → total (nominal €)
+  const voluntaryTotal = Math.max(0, expectedRun.contributed - investStart - freedContrib);
+  $('calcBreakdown').innerHTML =
+      `<div class="cb-row"><span>Начален баланс</span><b>${fmt(investStart)}</b></div>`
+    + `<div class="cb-row"><span>Твоите вноски (${fmt(investMo)}/мес${esc>0?` · +${esc}%/год`:''})</span><b>${fmt(voluntaryTotal)}</b></div>`
+    + (freedContrib > 0.5 ? `<div class="cb-row"><span>Освободена вноска след изплащане</span><b>${fmt(freedContrib)}</b></div>` : '')
+    + `<div class="cb-row total"><span>= Вложени общо</span><b>${fmt(expectedRun.contributed)}</b></div>`
+    + `<div class="cb-row"><span>+ Растеж при ~${blended.toFixed(1)}% (сложна лихва)</span><b>${fmt(expectedRun.final - expectedRun.contributed)}</b></div>`
+    + `<div class="cb-row grand"><span>= Крайна стойност след ${horizonY} г.</span><b>${fmt(expectedRun.final)}</b></div>`;
 
   // ---- freedom number (4% rule): annual expenses × 25, expressed in today's money ----
   const FI = essentials * 12 * 25;
@@ -622,7 +736,7 @@ function render(){
   } else if (fiMonth >= 0){
     fiEl.className = 'fi-note';
     fiEl.innerHTML = `🏁 Числото на свободата (разходи×25 = <b>${fmt(FI)}</b>) — достигаш го ~<b>${monthLabel(fiMonth)}</b>`
-      + ` (год. ${Math.round(fiMonth/12)} при 7%, в днешни пари).`;
+      + ` (год. ${Math.round(fiMonth/12)} при ~${blended.toFixed(1)}%, в днешни пари).`;
   } else {
     fiEl.className = 'fi-note out';
     fiEl.innerHTML = `🏁 Числото на свободата = <b>${fmt(FI)}</b> (разходи×25). Извън хоризонта при тази вноска`
@@ -631,21 +745,21 @@ function render(){
 
   drawInvestChart(scenarioRuns, H, FI, inflM);
   $('investSummary').textContent =
-    `При ${EXPECTED_R}% годишно, инвестиции от ${fmt(investStart)} начало растат до ${fmt(finalShown)} за ${horizonY} години`
+    `При претеглена доходност ~${blended.toFixed(1)}% инвестициите растат до ${fmt(finalShown)} за ${horizonY} години`
     + `${view === 'real' ? ' (в днешни пари)' : ''}. ` +
-    `Предпазливо (4%): ${fmt(show(scenarioRuns[0].run.final, H))}. Оптимистично (10%): ${fmt(show(scenarioRuns[2].run.final, H))}.`;
+    `Предпазливо (−3%): ${fmt(show(scenarioRuns[0].run.final, H))}. Оптимистично (+3%): ${fmt(show(scenarioRuns[2].run.final, H))}.`;
 
   // mode note
   $('modeNote').textContent = mode === 'sprint'
     ? `Спринт: всичко над вноската (${fmt(pool)}) бие по кредита${tSprint? ' до ' + monthLabel(tSprint):''}, после ${fmt(base + pool)}/мес. влизат в инвестиции.`
     : `Паралелно: кредитът върви по план, а ${fmt(investMo)}/мес. инвестираш от днес${tPar? '. След ' + monthLabel(tPar) + ' и вноската се влива в инвестициите':''}.`;
 
-  // ---- comparison: net worth at horizon (expected 7%) ----
-  const sprintInvest7 = projectInvest(investStart, EXPECTED_R, H, sprintContrib);
-  const parInvest7    = projectInvest(investStart, EXPECTED_R, H, parContrib);
-  const nwSprint = show(sprintInvest7.final - sprintLoanPad[H], H);
-  const nwPar    = show(parInvest7.final - parLoanPad[H], H);
-  renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintInvest7, parInvest7, interestSaved);
+  // ---- comparison: net worth at horizon (your mix, both strategies) ----
+  const sprintMix = projectMix(hUse, 0, H, tSprint, true,  escMo, freedPer, investStart);
+  const parMix    = projectMix(hUse, 0, H, tPar,    false, escMo, freedPer, investStart);
+  const nwSprint = show(sprintMix.final - sprintLoanPad[H], H);
+  const nwPar    = show(parMix.final - parLoanPad[H], H);
+  renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintMix, parMix, interestSaved, blended, rate);
 
   // ---- emergency fund ----
   renderEmergency(essentials, emNow, emMo);
@@ -695,7 +809,7 @@ function drawInvestChart(scenarioRuns, H, FI, inflM){
   const datasets = scenarioRuns.map(({s, run})=> ({
     label:s.label, data:run.rows.map((v,i)=>disp(v,i)), borderColor:s.color, borderWidth:s.width,
     pointRadius:0, tension:.25, hidden: !!hidden[s.label],
-    fill: s.r === EXPECTED_R,
+    fill: s.d === 0,
     backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(207,91,65,.10)';
       const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(207,91,65,.30)'); g.addColorStop(1,'rgba(207,91,65,.02)'); return g; },
   }));
@@ -751,7 +865,7 @@ function buildScenarioToggles(datasets){
   });
 }
 
-function renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintInvest, parInvest, interestSaved){
+function renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, sprintInvest, parInvest, interestSaved, blended, rate){
   $('nwSprint').textContent = fmt(nwSprint);
   $('nwParallel').textContent = fmt(nwPar);
   $('metaSprint').innerHTML = (sprintLoan.paysOff ? `Свободен ${monthLabel(tSprint)}` : 'кредитът не се изплаща') +
@@ -764,13 +878,15 @@ function renderComparison(nwSprint, nwPar, tSprint, tPar, sprintLoan, parLoan, s
   pEl.classList.toggle('win', nwPar > nwSprint);
 
   const diff = Math.abs(nwPar - nwSprint);
+  const rb = blended.toFixed(1);
+  const rl = (Math.round(rate*10)/10).toString();
   const line = $('verdictLine');
   if (diff < 1){
-    line.textContent = 'Двете стратегии излизат почти наравно при 7%.';
+    line.textContent = `Двете стратегии излизат почти наравно при ~${rb}%.`;
   } else if (nwPar > nwSprint){
-    line.innerHTML = `При 7% <b>паралелно</b> води с ${fmt(diff)} повече чисто богатство — защото пазарът (~7%) изпреварва лихвата по кредита (4.4%). Но спринтът те прави без дълг по-рано: по-малко риск, повече спокойствие.`;
+    line.innerHTML = `При ~${rb}% <b>паралелно</b> води с ${fmt(diff)} повече чисто богатство — защото очакваната доходност (~${rb}%) изпреварва лихвата по кредита (${rl}%). Но спринтът те прави без дълг по-рано: по-малко риск, повече спокойствие.`;
   } else {
-    line.innerHTML = `При 7% <b>спринтът</b> води с ${fmt(diff)} — изплащаш гарантираните 4.4% и инвестираш повече по-късно. Колкото по-висока е лихвата, толкова повече печели спринтът.`;
+    line.innerHTML = `При ~${rb}% <b>спринтът</b> води с ${fmt(diff)} — изплащаш гарантираните ${rl}% и инвестираш повече по-късно. Колкото по-висока е лихвата, толкова повече печели спринтът.`;
   }
 }
 
@@ -884,6 +1000,17 @@ function setView(v){
 $('viewNominal').addEventListener('click', ()=> setView('nominal'));
 $('viewReal').addEventListener('click', ()=> setView('real'));
 document.querySelectorAll('input').forEach(el=> el.addEventListener('input', render));
+
+// ---- holdings: seed sensible defaults, wire add/remove + delegated input ----
+const SEED_HOLDINGS = [
+  { name:'S&P 500', monthly:150, apy:10, years:30 },
+  { name:'Акции',   monthly:100, apy:8,  years:15 },
+  { name:'Злато',   monthly:50,  apy:5,  years:20 },
+];
+SEED_HOLDINGS.forEach(h => $('holdings').appendChild(makeHoldRow(h)));
+$('holdings').addEventListener('input', render);   // event delegation: covers current + future rows
+$('addHolding').addEventListener('click', () => { $('holdings').appendChild(makeHoldRow({ name:'', monthly:0, apy:7, years:10 })); render(); });
+
 if (!HAS_CHART){
   document.querySelectorAll('.chart-box').forEach(b=>{
     b.innerHTML = '<div class="chart-fallback">Графиките не се заредиха (библиотеката е блокирана). Числата по-горе остават валидни.</div>';
