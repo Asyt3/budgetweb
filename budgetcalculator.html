@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Пътят до 0 € · бюджет калкулатор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,400i&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<!-- Supply-chain hardening: pin this with Subresource Integrity once you have network.
+     Run: curl -sL https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js | openssl dgst -sha384 -binary | openssl base64 -A
+     then add integrity="sha384-<hash>" below. (Best: vendor the file into the vault for offline use.) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --paper:#f4efe6; --ink:#22281f; --green:#1f4d3a; --green-soft:#356048;
+    --coral:#cf5b41; --gold:#c79a3a; --sage:#6f8f7a; --taupe:#bcae8f;
+    --line:#ddd4c4; --card:#fbf8f1;
+    --shadow:0 8px 30px rgba(34,40,31,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; color:var(--ink);
+    background:radial-gradient(1100px 560px at 78% -12%, #faf7f0, var(--paper));
+    background-attachment:fixed;
+    font-family:'Hanken Grotesk', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    padding:18px 16px 28px;
+  }
+  .wrap { max-width:980px; margin:0 auto; }
+  .display { font-family:'Fraunces', Georgia, serif; }
+
+  header { margin-bottom:1rem; }
+  h1 { font-family:'Fraunces', serif; color:var(--green); font-size:clamp(1.5rem,4vw,2.1rem); margin:.2rem 0 0; font-weight:600; letter-spacing:-.01em; line-height:1.05; }
+  h1 em { font-style:italic; color:var(--coral); }
+  .eyebrow { color:var(--green-soft); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; margin:0; }
+
+  /* entrance + hover */
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:15px;
+    padding:1rem 1.15rem; margin-bottom:.8rem;
+    transition:box-shadow .25s ease, border-color .25s ease;
+    animation:rise .55s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .card:hover { box-shadow:var(--shadow); }
+  .wrap > div:nth-of-type(1){ animation-delay:.03s; }
+  .wrap > div:nth-of-type(2){ animation-delay:.09s; }
+  .wrap > div:nth-of-type(3){ animation-delay:.15s; }
+  .wrap > div:nth-of-type(4){ animation-delay:.21s; }
+  .wrap > div:nth-of-type(5){ animation-delay:.27s; }
+  .wrap > div:nth-of-type(6){ animation-delay:.33s; }
+  .wrap > div:nth-of-type(7){ animation-delay:.39s; }
+  @media (prefers-reduced-motion: reduce){ .card { animation:none; } .bar span, .prog > i { transition:none !important; } }
+
+  /* hero */
+  .hero { background:var(--green); color:var(--paper); border:none; position:relative; overflow:hidden;
+          display:grid; grid-template-columns:1fr; gap:1rem; box-shadow:0 12px 34px rgba(31,77,58,.18); }
+  .hero::before { content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(460px 240px at 10% -10%, rgba(255,255,255,.12), transparent 70%); }
+  .hero > * { position:relative; z-index:1; }
+  @media(min-width:680px){ .hero { grid-template-columns:auto 1fr; align-items:center; } }
+  .hero .count { font-family:'Fraunces', serif; font-size:clamp(2.6rem,8vw,3.8rem); line-height:.9; letter-spacing:-.02em; }
+  .hero .count small { font-size:1.2rem; font-style:italic; opacity:.85; }
+  .hero .sub { opacity:.82; font-size:.85rem; margin:.1rem 0; }
+  .badge { display:inline-block; margin-top:.55rem; font-size:.71rem; letter-spacing:.02em; padding:.3rem .85rem; border-radius:999px; background:var(--green-soft); }
+  .badge.warn { background:var(--coral); }
+  .chips { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+  .chip { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.08); border-radius:13px; padding:.6rem .7rem; transition:background .2s ease; }
+  .chip:hover { background:rgba(255,255,255,.15); }
+  .chip .l { font-size:.63rem; letter-spacing:.03em; opacity:.78; margin:0 0 .25rem; }
+  .chip .v { font-family:'Fraunces', serif; font-size:1.1rem; margin:0; }
+
+  h2 { font-family:'Fraunces', serif; color:var(--green); font-size:1.1rem; margin:0 0 .7rem; font-weight:600; letter-spacing:-.01em; }
+  h2 .h2sub { font-family:'Hanken Grotesk', sans-serif; font-weight:400; font-size:.72rem; letter-spacing:.02em; color:var(--green-soft); margin-left:.5rem; }
+  .note { color:var(--green-soft); font-size:.76rem; margin:.65rem 0 0; line-height:1.45; }
+  .chart-box { position:relative; height:230px; width:100%; }
+  .encourage { color:var(--green); font-size:.9rem; margin:.7rem 0 0; font-weight:500; line-height:1.45; }
+
+  /* budget = freedom (donut) */
+  .budget-layout { display:grid; grid-template-columns:1fr; gap:1.1rem; align-items:center; }
+  @media(min-width:640px){ .budget-layout { grid-template-columns:200px 1fr; } }
+  .donut-wrap { position:relative; width:100%; max-width:200px; aspect-ratio:1; margin:0 auto; }
+  .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+  .donut-center .big { font-family:'Fraunces', serif; font-size:1.95rem; color:var(--green); line-height:1; letter-spacing:-.01em; }
+  .donut-center .lbl { font-size:.6rem; letter-spacing:.06em; text-transform:uppercase; color:var(--green-soft); margin-top:.28rem; max-width:7.5rem; }
+  .legend { display:flex; flex-direction:column; gap:.4rem; font-size:.82rem; color:var(--green-soft); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:.5rem; vertical-align:middle; }
+  .legend b { color:var(--ink); font-weight:600; }
+  .legend .pct { opacity:.75; }
+  .facts { list-style:none; padding:0; margin:.95rem 0 0; display:flex; flex-direction:column; gap:.5rem; }
+  .facts li { position:relative; padding-left:1.4rem; font-size:.84rem; line-height:1.45; color:var(--ink); }
+  .facts li::before { content:"✦"; position:absolute; left:0; top:.05rem; color:var(--gold); }
+
+  /* inputs */
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.7rem .8rem; }
+  @media(min-width:560px){ .grid { grid-template-columns:repeat(3,1fr); } }
+  @media(min-width:820px){ .grid { grid-template-columns:repeat(4,1fr); } }
+  label { display:flex; flex-direction:column; gap:.3rem; }
+  label .cap { font-size:.64rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--green-soft); }
+  .field { display:flex; align-items:center; background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:.45rem .65rem;
+           transition:border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+  .field:hover { border-color:var(--green-soft); }
+  .field:focus-within { border-color:var(--green); background:#fff; box-shadow:0 0 0 3px rgba(31,77,58,.12); }
+  .field input { width:100%; border:none; background:transparent; outline:none; font-size:.92rem; color:var(--ink); font-family:inherit; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type=number] { -moz-appearance:textfield; }
+  .field .suffix { font-size:.72rem; color:var(--green-soft); margin-left:.4rem; white-space:nowrap; }
+  .hint { font-size:.69rem; color:var(--green-soft); margin:.25rem 0 0; }
+  .hint b { color:var(--ink); font-weight:600; }
+  .reset { color:var(--coral); cursor:pointer; border:none; border-bottom:1px dashed var(--coral);
+           background:none; padding:0; font:inherit; }
+  .reset:hover { color:var(--green); border-color:var(--green); }
+  .reset:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:2px; }
+  .disclaimer { font-size:.7rem; color:var(--green-soft); text-align:center; margin-top:1rem; line-height:1.45; }
+  /* visually hidden but available to screen readers */
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+             clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* segmented toggle (strategy) */
+  .seg { display:inline-flex; background:var(--paper); border:1px solid var(--line); border-radius:11px; padding:.25rem; gap:.25rem; margin-bottom:.2rem; }
+  .seg button { font:inherit; font-size:.8rem; font-weight:600; color:var(--green-soft); cursor:pointer;
+    border:none; background:none; padding:.4rem .85rem; border-radius:8px; transition:background .18s ease, color .18s ease; }
+  .seg button:hover { color:var(--green); }
+  .seg button[aria-pressed="true"] { background:var(--green); color:var(--paper); box-shadow:0 2px 8px rgba(31,77,58,.18); }
+  .seg button:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+  .seg-note { font-size:.74rem; color:var(--green-soft); margin:.55rem 0 .2rem; line-height:1.45; min-height:1.1em; }
+
+  /* growth headline */
+  .grow-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:.1rem .8rem; margin:.2rem 0 .1rem; }
+  .grow-head .big { font-family:'Fraunces', serif; font-size:clamp(2rem,6.5vw,2.9rem); color:var(--gold); line-height:1; letter-spacing:-.015em; }
+  .grow-head .at { font-size:.8rem; color:var(--green-soft); }
+  .grow-sub { color:var(--green-soft); font-size:.8rem; margin:.15rem 0 .2rem; }
+
+  /* comparison verdict */
+  .verdict { display:grid; grid-template-columns:1fr; gap:.8rem; margin-top:.2rem; }
+  @media(min-width:560px){ .verdict { grid-template-columns:1fr 1fr; } }
+  .strat { border:1px solid var(--line); border-radius:12px; padding:.85rem .95rem; background:var(--paper); position:relative; transition:border-color .2s ease, box-shadow .2s ease; }
+  .strat.win { border-color:var(--gold); box-shadow:0 0 0 2px rgba(199,154,58,.18); }
+  .strat .tag { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--green-soft); margin:0 0 .35rem; }
+  .strat .nw { font-family:'Fraunces', serif; font-size:1.5rem; color:var(--green); line-height:1; }
+  .strat .meta { font-size:.74rem; color:var(--green-soft); margin:.4rem 0 0; line-height:1.4; }
+  .strat .crown { position:absolute; top:.7rem; right:.85rem; font-size:.62rem; font-weight:600; color:var(--gold); letter-spacing:.04em; opacity:0; transition:opacity .2s ease; }
+  .strat.win .crown { opacity:1; }
+  .verdict-line { color:var(--green); font-size:.9rem; font-weight:500; margin:.85rem 0 0; line-height:1.5; }
+  .verdict-line b { color:var(--coral); }
+
+  /* progress bar (emergency fund) */
+  .prog { height:14px; border-radius:999px; background:var(--paper); border:1px solid var(--line); overflow:hidden; margin:.2rem 0 .1rem; }
+  .prog > i { display:block; height:100%; background:linear-gradient(90deg,var(--sage),var(--green-soft)); border-radius:999px;
+    width:0; transition:width .5s cubic-bezier(.2,.7,.2,1); }
+  .prog-row { display:flex; justify-content:space-between; font-size:.74rem; color:var(--green-soft); margin-top:.4rem; }
+  .prog-row b { color:var(--ink); }
+  .stab-layout { display:grid; grid-template-columns:1fr; gap:.9rem; align-items:center; }
+  @media(min-width:560px){ .stab-layout { grid-template-columns:1.3fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Спокоен план · стъпка по стъпка</p>
+    <h1>Пътят до <em>0 €</em> — и нагоре</h1>
+  </header>
+
+  <!-- HERO -->
+  <div class="card hero">
+    <div aria-live="polite">
+      <p class="sub">Свободен от кредита след</p>
+      <div class="count" id="payoffCount">— <small>мес.</small></div>
+      <p class="sub" id="payoffDate">≈ —</p>
+      <span class="badge" id="statusBadge">по план ✓</span>
+    </div>
+    <div class="chips">
+      <div class="chip"><p class="l">Вноска / месец</p><p class="v" id="chipPayment">—</p></div>
+      <div class="chip"><p class="l">Инвестирам / месец</p><p class="v" id="chipInvest">—</p></div>
+      <div class="chip"><p class="l">Богатство след <span id="chipHorizonYrs">20</span>г.</p><p class="v" id="chipWealth">—</p></div>
+    </div>
+  </div>
+
+  <!-- INPUTS -->
