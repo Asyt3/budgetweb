@@ -287,6 +287,7 @@
       <span class="at">при <b>7%</b> очаквана доходност · след <span id="growYears">20</span> год.</span>
     </div>
     <p class="grow-sub" id="growSub">—</p>
+    <p class="note" id="freedNote" style="display:none"></p>
     <p class="fi-note" id="fiNote"></p>
 
     <div class="toggle-row" id="scenarioToggles" role="group" aria-label="Покажи или скрий сценарии в графиката"></div>
@@ -533,6 +534,17 @@ function render(){
   $('cmpYears').textContent = horizonY;
   $('growSub').innerHTML = `Вложени общо <b>${fmt(expectedRun.contributed)}</b> · растеж <b>${fmt(expectedRun.final - expectedRun.contributed)}</b>`
     + (view === 'real' ? ' · <i>в днешни пари</i>' : '');
+
+  // transparency: how much of the total contributed is the loan payment redirected after payoff
+  const selPayoff = mode === 'sprint' ? tSprint : tPar;
+  const freedContrib = Math.max(0, H - selPayoff) * (base + extra);
+  const freedEl = $('freedNote');
+  if (freedContrib > 0.5){
+    freedEl.style.display = '';
+    freedEl.innerHTML = `От тях <b>${fmt(freedContrib)}</b> идват от освободената вноска след изплащане — вноската по кредита, пренасочена към инвестиции.`;
+  } else {
+    freedEl.style.display = 'none';
+  }
   $('chipPayment').textContent = fmt(base + extra);
   $('chipInvest').textContent = fmt(mode === 'sprint' ? 0 : investMo);
   $('chipWealth').textContent = fmtK(finalShown);
