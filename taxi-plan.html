@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Такси снежна топка · план за инвестиция</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,400i&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<!-- Supply-chain hardening: pin this with Subresource Integrity once you have network.
+     Run: curl -sL https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js | openssl dgst -sha384 -binary | openssl base64 -A
+     then add integrity="sha384-<hash>" below. (Best: vendor the file into the vault for offline use.) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<!-- anime.js for micro-interactions (graceful: blocked = no animation). Pin with SRI / vendor on a networked machine, like Chart.js. -->
+<script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --paper:#f4efe6; --ink:#22281f; --green:#1f4d3a; --green-soft:#356048;
+    --coral:#cf5b41; --gold:#c79a3a; --sage:#6f8f7a; --taupe:#bcae8f;
+    --line:#ddd4c4; --card:#fbf8f1;
+    --shadow:0 8px 30px rgba(34,40,31,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; color:var(--ink);
+    background:radial-gradient(1100px 560px at 78% -12%, #faf7f0, var(--paper));
+    background-attachment:fixed;
+    font-family:'Hanken Grotesk', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    padding:18px 16px 28px;
+  }
+  .wrap { max-width:980px; margin:0 auto; }
+  .display { font-family:'Fraunces', Georgia, serif; }
+
+  header { margin-bottom:1rem; }
+  h1 { font-family:'Fraunces', serif; color:var(--green); font-size:clamp(1.5rem,4vw,2.1rem); margin:.2rem 0 0; font-weight:600; letter-spacing:-.01em; line-height:1.05; }
+  h1 em { font-style:italic; color:var(--coral); }
+  .eyebrow { color:var(--green-soft); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; margin:0; }
+
+  /* entrance + hover */
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:15px;
+    padding:1rem 1.15rem; margin-bottom:.8rem;
+    transition:box-shadow .25s ease, border-color .25s ease;
+    animation:rise .55s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .card:hover { box-shadow:var(--shadow); }
+  .wrap > div:nth-of-type(1){ animation-delay:.03s; }
+  .wrap > div:nth-of-type(2){ animation-delay:.09s; }
+  .wrap > div:nth-of-type(3){ animation-delay:.15s; }
+  .wrap > div:nth-of-type(4){ animation-delay:.21s; }
+  .wrap > div:nth-of-type(5){ animation-delay:.27s; }
+  .wrap > div:nth-of-type(6){ animation-delay:.33s; }
+  .wrap > div:nth-of-type(7){ animation-delay:.39s; }
+  @media (prefers-reduced-motion: reduce){ .card { animation:none; } .bar span, .prog > i { transition:none !important; } }
+
+  /* hero */
+  .hero { background:var(--green); color:var(--paper); border:none; position:relative; overflow:hidden;
+          display:grid; grid-template-columns:1fr; gap:1rem; box-shadow:0 12px 34px rgba(31,77,58,.18); }
+  .hero::before { content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(460px 240px at 10% -10%, rgba(255,255,255,.12), transparent 70%); }
+  .hero > * { position:relative; z-index:1; }
+  @media(min-width:680px){ .hero { grid-template-columns:auto 1fr; align-items:center; } }
+  .hero .count { font-family:'Fraunces', serif; font-size:clamp(2.6rem,8vw,3.8rem); line-height:.9; letter-spacing:-.02em; }
+  .hero .count small { font-size:1.2rem; font-style:italic; opacity:.85; }
+  .hero .sub { opacity:.82; font-size:.85rem; margin:.1rem 0; }
+  .badge { display:inline-block; margin-top:.55rem; font-size:.71rem; letter-spacing:.02em; padding:.3rem .85rem; border-radius:999px; background:var(--green-soft); }
+  .badge.warn { background:var(--coral); }
+  .chips { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+  .chip { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.08); border-radius:13px; padding:.6rem .7rem; transition:background .2s ease; }
+  .chip:hover { background:rgba(255,255,255,.15); }
+  .chip .l { font-size:.63rem; letter-spacing:.03em; opacity:.78; margin:0 0 .25rem; }
+  .chip .v { font-family:'Fraunces', serif; font-size:1.1rem; margin:0; }
+
+  h2 { font-family:'Fraunces', serif; color:var(--green); font-size:1.1rem; margin:0 0 .7rem; font-weight:600; letter-spacing:-.01em; }
+  h2 .h2sub { font-family:'Hanken Grotesk', sans-serif; font-weight:400; font-size:.72rem; letter-spacing:.02em; color:var(--green-soft); margin-left:.5rem; }
+  .note { color:var(--green-soft); font-size:.76rem; margin:.65rem 0 0; line-height:1.45; }
+  .chart-box { position:relative; height:230px; width:100%; }
+  .encourage { color:var(--green); font-size:.9rem; margin:.7rem 0 0; font-weight:500; line-height:1.45; }
+
+  /* budget = freedom (donut) */
+  .budget-layout { display:grid; grid-template-columns:1fr; gap:1.1rem; align-items:center; }
+  @media(min-width:640px){ .budget-layout { grid-template-columns:200px 1fr; } }
+  .donut-wrap { position:relative; width:100%; max-width:200px; aspect-ratio:1; margin:0 auto; }
+  .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+  .donut-center .big { font-family:'Fraunces', serif; font-size:1.95rem; color:var(--green); line-height:1; letter-spacing:-.01em; }
+  .donut-center .lbl { font-size:.6rem; letter-spacing:.06em; text-transform:uppercase; color:var(--green-soft); margin-top:.28rem; max-width:7.5rem; }
+  .legend { display:flex; flex-direction:column; gap:.4rem; font-size:.82rem; color:var(--green-soft); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:.5rem; vertical-align:middle; }
+  .legend b { color:var(--ink); font-weight:600; }
+  .legend .pct { opacity:.75; }
+  .facts { list-style:none; padding:0; margin:.95rem 0 0; display:flex; flex-direction:column; gap:.5rem; }
+  .facts li { position:relative; padding-left:1.4rem; font-size:.84rem; line-height:1.45; color:var(--ink); }
+  .facts li::before { content:"✦"; position:absolute; left:0; top:.05rem; color:var(--gold); }
+
+  /* inputs */
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.7rem .8rem; }
+  @media(min-width:560px){ .grid { grid-template-columns:repeat(3,1fr); } }
+  @media(min-width:820px){ .grid { grid-template-columns:repeat(4,1fr); } }
+  label { display:flex; flex-direction:column; gap:.3rem; }
+  label .cap { font-size:.64rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--green-soft); }
+  .field { display:flex; align-items:center; background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:.45rem .65rem;
+           transition:border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+  .field:hover { border-color:var(--green-soft); }
+  .field:focus-within { border-color:var(--green); background:#fff; box-shadow:0 0 0 3px rgba(31,77,58,.12); }
+  .field input { width:100%; border:none; background:transparent; outline:none; font-size:.92rem; color:var(--ink); font-family:inherit; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type=number] { -moz-appearance:textfield; }
+  .field .suffix { font-size:.72rem; color:var(--green-soft); margin-left:.4rem; white-space:nowrap; }
+  .hint { font-size:.69rem; color:var(--green-soft); margin:.25rem 0 0; }
+  .hint b { color:var(--ink); font-weight:600; }
+  .reset { color:var(--coral); cursor:pointer; border:none; border-bottom:1px dashed var(--coral);
+           background:none; padding:0; font:inherit; }
+  .reset:hover { color:var(--green); border-color:var(--green); }
+  .reset:focus-visible { outline:2px solid var(--green); outline-offset:2px; border-radius:2px; }
+  .disclaimer { font-size:.7rem; color:var(--green-soft); text-align:center; margin-top:1rem; line-height:1.45; }
+  /* visually hidden but available to screen readers */
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+             clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* segmented toggle (view) */
+  .seg { display:inline-flex; background:var(--paper); border:1px solid var(--line); border-radius:11px; padding:.25rem; gap:.25rem; margin-bottom:.2rem; }
+  .seg button { font:inherit; font-size:.8rem; font-weight:600; color:var(--green-soft); cursor:pointer;
+    border:none; background:none; padding:.4rem .85rem; border-radius:8px; transition:background .18s ease, color .18s ease; }
+  .seg button:hover { color:var(--green); }
+  .seg button[aria-pressed="true"] { background:var(--green); color:var(--paper); box-shadow:0 2px 8px rgba(31,77,58,.18); }
+  .seg button:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+  .seg-note { font-size:.74rem; color:var(--green-soft); margin:.55rem 0 .2rem; line-height:1.45; min-height:1.1em; }
+
+  /* growth headline */
+  .grow-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:.1rem .8rem; margin:.2rem 0 .1rem; }
+  .grow-head .big { font-family:'Fraunces', serif; font-size:clamp(2rem,6.5vw,2.9rem); color:var(--gold); line-height:1; letter-spacing:-.015em; }
+  .grow-head .at { font-size:.8rem; color:var(--green-soft); }
+  .grow-sub { color:var(--green-soft); font-size:.8rem; margin:.15rem 0 .2rem; }
+
+  /* progress bar (payback) */
+  .prog { height:14px; border-radius:999px; background:var(--paper); border:1px solid var(--line); overflow:hidden; margin:.2rem 0 .1rem; }
+  .prog > i { display:block; height:100%; background:linear-gradient(90deg,var(--sage),var(--green-soft)); border-radius:999px;
+    width:0; transition:width .5s cubic-bezier(.2,.7,.2,1); }
+  .prog-row { display:flex; justify-content:space-between; font-size:.74rem; color:var(--green-soft); margin-top:.4rem; }
+  .prog-row b { color:var(--ink); }
+  .stab-layout { display:grid; grid-template-columns:1fr; gap:.9rem; align-items:center; }
+  @media(min-width:560px){ .stab-layout { grid-template-columns:1.3fr 1fr; } }
+
+  /* collapsible advanced assumptions */
+  details.adv { margin-top:.9rem; border-top:1px dashed var(--line); padding-top:.7rem; }
+  details.adv > summary { cursor:pointer; list-style:none; font-size:.7rem; font-weight:600;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--green-soft);
+    display:inline-flex; align-items:center; gap:.4rem; padding:.25rem 0; }
+  details.adv > summary::-webkit-details-marker { display:none; }
+  details.adv > summary::before { content:"▸"; transition:transform .2s ease; display:inline-block; }
+  details.adv[open] > summary::before { transform:rotate(90deg); }
+  details.adv > summary:focus-visible { outline:2px solid var(--green); outline-offset:3px; border-radius:3px; }
+  details.adv .grid { margin-top:.7rem; }
+
+  /* scenario toggle chips (keyboard-accessible mirror of the chart legend) */
+  .toggle-row { display:flex; flex-wrap:wrap; gap:.4rem; margin:.1rem 0 .6rem; }
+  .toggle { font:inherit; font-size:.74rem; font-weight:600; cursor:pointer; color:var(--green-soft);
+    background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:.32rem .7rem;
+    display:inline-flex; align-items:center; gap:.4rem; transition:background .18s ease, color .18s ease, border-color .18s ease, opacity .18s ease; }
+  .toggle .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .toggle:hover { border-color:var(--green-soft); }
+  .toggle[aria-pressed="false"] { opacity:.42; text-decoration:line-through; }
+  .toggle:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+
+  /* milestone readout */
+  .fi-note { color:var(--green); font-size:.82rem; margin:.55rem 0 .2rem; line-height:1.45; font-weight:500; }
+  .fi-note b { color:var(--gold); }
+  .fi-note.out { color:var(--green-soft); font-weight:400; }
+
+  /* graceful failure if the chart library is blocked */
+  .chart-fallback { display:flex; align-items:center; justify-content:center; height:100%;
+    text-align:center; color:var(--green-soft); font-size:.8rem; padding:1rem; line-height:1.5; }
+
+  /* "how is this calculated" breakdown */
+  .calc-explain { margin-top:.5rem; }
+  .calc-grid { margin-top:.6rem; }
+  .cb-row { display:flex; justify-content:space-between; gap:1rem; font-size:.82rem; color:var(--green-soft);
+            padding:.34rem 0; border-bottom:1px dashed var(--line); }
+  .cb-row b { color:var(--ink); font-weight:600; }
+  .cb-row.total b { color:var(--green); }
+  .cb-row.grand { border-bottom:none; font-size:.9rem; margin-top:.15rem; }
+  .cb-row.grand b { color:var(--gold); font-family:'Fraunces', serif; font-size:1.15rem; }
+
+  /* ---------- light visual refresh ---------- */
+  body { padding:24px 18px 44px; }
+  .wrap { max-width:1060px; }
+  .card { border-radius:16px; padding:1.25rem 1.4rem; margin-bottom:1.05rem;
+          box-shadow:0 1px 2px rgba(34,40,31,.04); }
+  .card:hover { box-shadow:0 12px 36px rgba(34,40,31,.09); }
+  h2 { font-size:1.16rem; margin-bottom:1rem; }
+  .hero .count { font-size:clamp(2.9rem,8vw,4.1rem); }
+  .grow-head .big { font-size:clamp(2.15rem,6.5vw,3.05rem); }
+  .chart-box { height:244px; }
+
+  .grid { grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:1.05rem .9rem; }
+  label { gap:.42rem; }
+  label .cap { font-size:.66rem; letter-spacing:.05em; line-height:1.3; min-height:2.3em;
+               display:flex; align-items:flex-end; }
+  .field { padding:.6rem .7rem; border-radius:10px; min-height:46px; }
+  .field input { font-size:1rem; }            /* 16px — avoids iOS zoom on focus, reads cleaner */
+  .hint { font-size:.7rem; line-height:1.4; margin-top:.4rem; }
+
+  /* grouped inputs — clear section rhythm */
+  .group { margin:0; }
+  .group + .group { margin-top:1.25rem; padding-top:1.15rem; border-top:1px solid var(--line); }
+  .subhead { font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em;
+             color:var(--green); opacity:.78; margin:0 0 .9rem; }
+  details.adv { margin-top:1.25rem; }
+
+  .preview-flag { position:fixed; right:12px; bottom:12px; z-index:50; font-size:.66rem; font-weight:600;
+                  letter-spacing:.04em; color:var(--paper); background:var(--green-soft); opacity:.92;
+                  padding:.35rem .7rem; border-radius:999px; box-shadow:0 6px 18px rgba(53,96,72,.3); }
+
+  /* ---------- two-column workspace layout ---------- */
+  body.v-columns { padding:22px 12px 40px; }
+  .v-columns .wrap { max-width:none; }
+  .app { display:grid; grid-template-columns:1fr; gap:1rem; }
+  @media (min-width:920px){
+    .app { grid-template-columns:380px 1fr; align-items:start; }
+    .inputs-col { position:sticky; top:14px; max-height:calc(100vh - 28px); overflow:auto;
+                  -webkit-overflow-scrolling:touch; }
+    .inputs-col .card { margin-bottom:0; }
+  }
+  .v-columns .inputs-col .grid { grid-template-columns:1fr; gap:.95rem; }
+  .v-columns .inputs-col label .cap { min-height:0; }
+  .results-col > .card:first-child { margin-top:0; }
+</style>
+</head>
+<body class="v-columns">
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Спокоен план · снежна топка</p>
+    <h1>Едно такси става <em>много</em></h1>
+  </header>
+
+  <div class="app">
+
+    <div class="inputs-col">
+    <div class="card">
+    <h2>Твоите данни</h2>
+      <div class="group">
+        <p class="subhead">Таксито</p>
+        <div class="grid">
+        <label><span class="cap">Твой дял в колата</span>
+        <span class="field"><input type="number" id="carCost" value="7000" step="250" min="500" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">~7000 € на човек · същата сума купува и всяка следваща кола</span></label>
+        <label><span class="cap">Печалба на седмица / кола</span>
+        <span class="field"><input type="number" id="weekly" value="70" step="5" min="0" inputmode="decimal"><span class="suffix">€/седм</span></span>
+        <span class="hint">= <b id="monthlyPer">—</b>/мес на кола (4 седмици/мес)</span></label>
+        <label><span class="cap">Максимум коли</span>
+        <span class="field"><input type="number" id="maxCars" value="8" step="1" min="1" max="20" inputmode="numeric"><span class="suffix">бр</span></span>
+        <span class="hint">таванът на снежната топка — операционен избор</span></label>
+        </div>
+      </div>
+      <div class="group">
+        <p class="subhead">Кредит (финансира кола №1)</p>
+        <div class="grid">
+        <label><span class="cap">Остатък по кредита</span>
+        <span class="field"><input type="number" id="principal" value="13000" step="100" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+        <label><span class="cap">Годишен лихвен % (ГПР)</span>
+        <span class="field"><input type="number" id="rate" value="4.4" step="0.1" min="0" max="100" inputmode="decimal"><span class="suffix">%</span></span>
+        <span class="hint">променлива — обновявай я</span></label>
+        <label><span class="cap">Оставащ срок</span>
+        <span class="field"><input type="number" id="term" value="120" step="1" min="1" max="600" inputmode="numeric"><span class="suffix">мес</span></span></label>
+        <label><span class="cap">Месечна вноска</span>
+        <span class="field"><input type="number" id="payment" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">по срока: <b id="suggestPay">—</b> · <button type="button" class="reset" id="resetPay">нулирай</button></span></label>
+        </div>
+      </div>
+      <div class="group">
+        <p class="subhead">Спестяване към следваща кола</p>
+        <div class="grid">
+        <label><span class="cap">Заделям от заплата / месец</span>
+        <span class="field"><input type="number" id="topup" value="110" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">върху печалбата от таксито · в началото общо <b id="contribStart">—</b>/мес в S&amp;P 500</span></label>
+        <label><span class="cap">S&amp;P 500 доходност / год</span>
+        <span class="field"><input type="number" id="apy" value="9" step="0.5" min="0" max="30" inputmode="decimal"><span class="suffix">%</span></span>
+        <span class="hint">историческа средна ~8–10%, не гаранция</span></label>
+        </div>
+      </div>
+      <details class="adv">
+        <summary>Разширени допускания</summary>
+        <div class="grid">
+          <label><span class="cap">Хоризонт</span>
+          <span class="field"><input type="number" id="horizon" value="10" step="1" min="1" max="40" inputmode="numeric"><span class="suffix">год</span></span></label>
+          <label><span class="cap">Инфлация / год</span>
+          <span class="field"><input type="number" id="inflation" value="2.5" step="0.1" min="0" max="20" inputmode="decimal"><span class="suffix">%</span></span>
+          <span class="hint">за изчисляване на „днешни пари“</span></label>
+        </div>
+      </details>
+  </div>
+    </div>
+
+    <div class="results-col">
+    <div class="card hero">
+    <div aria-live="polite">
+      <p class="sub">Пасивен доход от таксита след <span id="heroYears">10</span> г.</p>
+      <div class="count" id="incomeCount">— <small>€/мес</small></div>
+      <p class="sub" id="incomeSub">≈ —</p>
+      <span class="badge" id="statusBadge">снежна топка ✓</span>
+    </div>
+    <div class="chips">
+      <div class="chip"><p class="l">Коли след <span id="chipYears">10</span>г.</p><p class="v" id="chipCars">—</p></div>
+      <div class="chip"><p class="l">S&amp;P 500 фонд</p><p class="v" id="chipFund">—</p></div>
+      <div class="chip"><p class="l">Кола №1 се изплаща за</p><p class="v" id="chipPayback">—</p></div>
+    </div>
+  </div>
+
+    <div class="card">
+    <h2>Снежната топка <span class="h2sub">коли във времето</span></h2>
+    <div class="chart-box"><canvas id="carsChart" role="img" aria-label="Брой таксита във времето — стълбата на снежната топка"></canvas></div>
+    <p class="sr-only" id="carsSummary"></p>
+    <p class="encourage" id="encourage"></p>
+  </div>
+
+    <div class="card">
+    <h2>S&amp;P 500 фондът расте <span class="h2sub">три сценария</span></h2>
+
+    <div style="display:flex; flex-wrap:wrap; gap:.5rem .9rem; align-items:center;">
+      <div class="seg" role="group" aria-label="Изглед на сумите">
+        <button type="button" id="viewNominal" aria-pressed="true">Номинални</button>
+        <button type="button" id="viewReal" aria-pressed="false">Днешни пари</button>
+      </div>
+    </div>
+    <p class="seg-note" id="viewNote"></p>
+
+    <div class="grow-head">
+      <span class="big" id="fundValue">—</span>
+      <span class="at">фонд при <b id="apyLbl">9</b>% доходност · след <span id="growYears">10</span> год.</span>
+    </div>
+    <p class="grow-sub" id="growSub">—</p>
+    <p class="fi-note" id="milestoneNote"></p>
+
+    <details class="adv calc-explain">
+      <summary>Как се смята това?</summary>
+      <div class="calc-grid" id="calcBreakdown"></div>
+    </details>
+
+    <div class="toggle-row" id="scenarioToggles" role="group" aria-label="Покажи или скрий сценарии в графиката"></div>
+
+    <div class="chart-box"><canvas id="fundChart" role="img" aria-label="Прогноза за стойността на S&P 500 фонда при предпазлив, очакван и оптимистичен сценарий"></canvas></div>
+    <p class="sr-only" id="fundSummary"></p>
+    <p class="note">Фондът се пълни от печалбата на таксито плюс това, което заделяш — после се изпразва, за да купи нова кола (затова пада на стъпала). След тавана от коли вече само расте. Три сценария: <b>очаквано</b> е твоята доходност, а <b>предпазливо</b> / <b>оптимистично</b> са −3% / +3% върху нея. Доходността не е гарантирана.</p>
+  </div>
+
+    <div class="card">
+    <h2>Месечен паричен поток <span class="h2sub">при <span id="flowCars">1</span> кола</span></h2>
+    <div class="budget-layout">
+      <div class="donut-wrap">
+        <canvas id="flowChart" role="img" aria-label="Разпределение на месечния поток: към S&P фонда от печалба и заплата, и вноска по кредита"></canvas>
+        <div class="donut-center">
+          <span class="big" id="flowNet">—</span>
+          <span class="lbl">влиза в S&amp;P / мес</span>
+        </div>
+      </div>
+      <div>
+        <div class="legend" id="flowLegend"></div>
+        <ul class="facts" id="flowFacts"></ul>
+      </div>
+    </div>
+    <p class="note" id="flowNote"></p>
+  </div>
+
+    <div class="card">
+    <h2>Кредитът пада до нула <span class="h2sub">покрит от печалбата</span></h2>
+    <div class="chart-box"><canvas id="loanChart" role="img" aria-label="Графика на остатъка по кредита във времето"></canvas></div>
+    <p class="sr-only" id="loanSummary"></p>
+    <p class="note" id="loanNote"></p>
+  </div>
+
+    <div class="card">
+    <h2>Кога се изплаща колата</h2>
+    <div class="stab-layout">
+      <div>
+        <div class="prog"><i id="paybackBar"></i></div>
+        <div class="prog-row"><span>вложено <b id="paybackInvested">—</b></span><span>връща се за <b id="paybackMonths">—</b></span></div>
+        <p class="note" id="paybackNote"></p>
+      </div>
+      <ul class="facts" id="paybackFacts"></ul>
+    </div>
+  </div>
+    </div>
+
+  </div>
+
+  <p class="disclaimer">Образователен инструмент, не финансов съвет. „Сигурна“ доходност от наема зависи от това партньорът да поддържа колата отдадена — заложи реалистично заетостта. Лихвата по кредита е променлива. Прогнозите за S&amp;P 500 са оценки при постоянна доходност; реалните пазари се колебаят и доходността не е гарантирана. Колите се амортизират — фондът е ликвидното богатство, колите са машината за доход.</p>
+
+  <div class="preview-flag">план · такси снежна топка</div>
+</div>
+
+<script>
+const C = { green:'#1f4d3a', greenSoft:'#3f7a5e', coral:'#cf5b41', gold:'#c79a3a', sage:'#6f8f7a', taupe:'#bcae8f', line:'#ddd4c4', paper:'#f4efe6', ink:'#22281f' };
+const MONTHS = ['ян.','февр.','март','апр.','май','юни','юли','авг.','септ.','окт.','ноем.','дек.'];
+// scenario bands: the S&P APY is shifted by these deltas. 0 = your assumed yield.
+const SHIFTS = [
+  { d:-3, color:C.sage,  width:1.5 },
+  { d: 0, color:C.coral, width:2.5 },
+  { d:+3, color:C.gold,  width:1.5 },
+];
+const now = new Date();
+const START = { y: now.getFullYear(), m: now.getMonth() };
+
+const fmt  = n => Math.round(n).toLocaleString('bg-BG') + ' €';
+const fmtK = n => n >= 10000 ? Math.round(n/1000).toLocaleString('bg-BG') + ' хил. €' : fmt(n);
+const monthLabel = off => {
+  const idx = START.m + off, y = START.y + Math.floor(idx/12);
+  return MONTHS[((idx%12)+12)%12] + ' ' + y;
+};
+const yearOf = off => START.y + Math.floor((START.m + off)/12);
+const plural = (n, one, few) => n === 1 ? one : few;
+
+// annuity monthly payment
+function annuity(P, annualRate, n){
+  const r = annualRate/100/12;
+  if (n <= 0) return P;
+  if (r === 0) return P/n;
+  return P*r / (1 - Math.pow(1+r, -n));
+}
+
+// The snowball engine. Starts with 1 (credit-funded) car; the full taxi profit plus a
+// salary top-up flow into an S&P pot each month. Whenever the pot reaches the cost of a
+// car, it buys one (cash, no new credit) and the monthly profit steps up — a snowball.
+// The single credit (which funded car #1) is serviced from the profit and amortises on
+// schedule. Returns month-by-month arrays for the charts plus end-state totals.
+function runSnowball({ P, rate, payment, pm, topup, apy, carCost, maxCars, H }){
+  const r  = rate/100/12;
+  const mr = apy/100/12;
+  let cars = 1, pot = 0, loan = P;
+  let cumProfit = 0, cumTopup = 0, cumCredit = 0, cumContrib = 0;
+  const carsArr = [1], potArr = [0], loanArr = [P], incomeArr = [pm], profitArr = [0];
+  const buys = []; // { m, n }
+  for (let m = 1; m <= H; m++){
+    // credit service (only while a balance remains)
+    if (loan > 0.005){
+      const interest = loan * r;
+      const due = loan + interest;
+      const pay = Math.min(payment, due);
+      loan = due - pay;
+      cumCredit += pay;
+    }
+    // profit earned this month, by the cars currently owned
+    const profit = pm * cars;
+    cumProfit += profit;
+    // the whole profit reinvests, plus the salary top-up
+    const contrib = profit + topup;
+    cumContrib += contrib; cumTopup += topup;
+    // grow the pot, then add this month's contribution
+    pot = pot * (1 + mr) + contrib;
+    // buy as many cars as the pot now affords (cap-limited)
+    while (pot >= carCost && cars < maxCars){
+      pot -= carCost; cars++; buys.push({ m, n: cars });
+    }
+    carsArr.push(cars); potArr.push(pot); loanArr.push(loan);
+    incomeArr.push(pm * cars); profitArr.push(cumProfit);
+  }
+  return { carsArr, potArr, loanArr, incomeArr, profitArr, buys,
+           cars, pot, loan, cumProfit, cumTopup, cumCredit, cumContrib };
+}
+
+let carsChart, fundChart, loanChart, flowChart;
+let paymentTouched = false; // false = auto-fill the payment from the term; true = user typed it
+let view = 'nominal';       // 'nominal' | 'real' (today's-money, inflation-adjusted)
+const hidden = {};          // which fund-chart series are toggled off (by label)
+const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const HAS_CHART = typeof Chart !== 'undefined'; // graceful if the CDN library is blocked
+
+const $ = id => document.getElementById(id);
+const isVisible = el => !!(el && el.offsetParent !== null);
+
+function render(){
+  // clamp money inputs at 0 — negatives are nonsensical here
+  const pos = id => Math.max(0, +$(id).value || 0);
+  const carCost = Math.max(1, +$('carCost').value || 7000);
+  const weekly  = pos('weekly');
+  const pm      = weekly * 4;                       // monthly profit per car (4 weeks/month)
+  const maxCars = Math.min(20, Math.max(1, Math.round(+$('maxCars').value || 1)));
+  const P       = pos('principal');
+  const rate    = Math.max(0, +$('rate').value || 0);
+  const term    = Math.max(1, +$('term').value || 120);
+  const topup   = pos('topup');
+  const apy     = Math.max(0, +$('apy').value || 0);
+  const horizonY= Math.max(1, +$('horizon').value || 10);
+  const H       = horizonY * 12;
+  const infl    = Math.min(20, Math.max(0, +$('inflation').value || 0));
+  const inflM   = infl/100/12;
+  const toReal  = (val, m) => val / Math.pow(1 + inflM, m);
+  const show    = (val, m) => view === 'real' ? toReal(val, m) : val;
+
+  // monthly payment: editable, auto-fills from the term until the user overrides it
+  const suggested = annuity(P, rate, term);
+  const payEl = $('payment');
+  if (!paymentTouched) payEl.value = Math.round(suggested);
+  const payment = paymentTouched ? (+payEl.value || 0) : suggested;
+  $('suggestPay').textContent = fmt(suggested);
+
+  // live input echoes
+  $('monthlyPer').textContent  = fmt(pm);
+  $('contribStart').textContent = fmt(pm + topup);
+  $('heroYears').textContent   = horizonY;
+  $('chipYears').textContent   = horizonY;
+  $('growYears').textContent   = horizonY;
+  $('apyLbl').textContent      = apy.toFixed(apy % 1 ? 1 : 0);
+
+  // expected run + scenario bands (each band re-times its own purchases)
+  const base = { P, rate, payment, pm, topup, apy, carCost, maxCars, H };
+  const lblFor = d => d === 0 ? `очаквано (${apy.toFixed(apy%1?1:0)}%)`
+                    : (d < 0 ? 'предпазливо (−3%)' : 'оптимистично (+3%)');
+  const runs = SHIFTS.map(sh => ({
+    s: { label: lblFor(sh.d), color: sh.color, width: sh.width, d: sh.d },
+    run: runSnowball({ ...base, apy: Math.max(0, apy + sh.d) }),
+  }));
+  const expected = runs.find(x => x.s.d === 0).run;
+
+  const paybackMo = Math.ceil(carCost / Math.max(1, pm)); // months for one car to repay its cost
+
+  // ---- hero ----
+  const endIncome = pm * expected.cars;
+  $('incomeCount').innerHTML = fmt(endIncome).replace(' €','') + ' <small>€/мес</small>';
+  $('incomeSub').textContent = `от ${expected.cars} ${plural(expected.cars,'кола','коли')} · ${fmt(endIncome*12)}/год`;
+  $('chipCars').textContent = expected.cars + ' бр';
+  $('chipFund').textContent = fmtK(show(expected.pot, H));
+  $('chipPayback').textContent = paybackMo + ' мес';
+
+  const badge = $('statusBadge');
+  if (pm <= 0){
+    badge.className = 'badge warn'; badge.textContent = 'въведи печалба от наема';
+  } else if (expected.cars >= maxCars){
+    badge.className = 'badge'; badge.textContent = `пълни тавана от ${maxCars} ${plural(maxCars,'кола','коли')} ✓`;
+  } else if (expected.cars === 1){
+    badge.className = 'badge warn'; badge.textContent = 'втора кола не се събира в хоризонта';
+  } else {
+    badge.className = 'badge'; badge.textContent = `${expected.cars} ${plural(expected.cars,'кола','коли')} за ${horizonY} г. ✓`;
+  }
+
+  // ---- snowball (cars) chart + copy ----
+  drawCarsChart(expected, H, maxCars);
+  const car2 = expected.buys.find(b => b.n === 2);
+  const enc = $('encourage');
+  if (pm <= 0){
+    enc.textContent = 'Въведи печалбата от наема, за да тръгне снежната топка.';
+  } else if (car2){
+    enc.textContent = `Кола №1 връща дела си за ${paybackMo} месеца. Втората кола идва ~${monthLabel(car2.m)} — и всяка следваща все по-бързо, защото печалбата ѝ също спестява.`;
+  } else {
+    enc.textContent = `Кола №1 връща дела си за ${paybackMo} месеца. При тези числа втората кола не се събира в хоризонта — увеличи заделяното или печалбата.`;
+  }
+  $('carsSummary').textContent = `Започваш с 1 кола; по плана стигаш до ${expected.cars} ${plural(expected.cars,'кола','коли')} за ${horizonY} години`
+    + (car2 ? `, като втората идва около ${monthLabel(car2.m)}.` : '.');
+
+  // ---- fund headline + breakdown ----
+  const fundShown = show(expected.pot, H);
+  $('fundValue').textContent = fmt(fundShown);
+  $('growSub').innerHTML = `Вложено общо <b>${fmt(expected.cumContrib)}</b> · от тях печалба от таксита <b>${fmt(expected.cumProfit)}</b>`
+    + (view === 'real' ? ' · <i>в днешни пари</i>' : '');
+
+  $('calcBreakdown').innerHTML =
+      `<div class="cb-row"><span>Печалба от таксита (реинвестирана)</span><b>${fmt(expected.cumProfit)}</b></div>`
+    + `<div class="cb-row"><span>Заделено от заплата (${fmt(topup)}/мес)</span><b>${fmt(expected.cumTopup)}</b></div>`
+    + `<div class="cb-row total"><span>= Вложено в S&amp;P 500</span><b>${fmt(expected.cumContrib)}</b></div>`
+    + `<div class="cb-row"><span>− Похарчено за нови коли (${Math.max(0,expected.cars-1)} × ${fmt(carCost)})</span><b>${fmt(Math.max(0,expected.cars-1)*carCost)}</b></div>`
+    + `<div class="cb-row"><span>+ Растеж при ${apy.toFixed(apy%1?1:0)}% (сложна лихва)</span><b>${fmt(expected.pot - (expected.cumContrib - Math.max(0,expected.cars-1)*carCost))}</b></div>`
+    + `<div class="cb-row grand"><span>= S&amp;P фонд след ${horizonY} г.</span><b>${fmt(expected.pot)}</b></div>`;
+
+  // milestone: when does the leftover S&P fund (after all car buys) pass 50k of today's money?
+  const MS = 50000;
+  let msMonth = -1;
+  for (let m = 0; m <= H; m++){ if (toReal(expected.potArr[m], m) >= MS){ msMonth = m; break; } }
+  const msEl = $('milestoneNote');
+  if (expected.cars >= maxCars && msMonth >= 0){
+    msEl.className = 'fi-note';
+    msEl.innerHTML = `🏁 След тавана от <b>${maxCars}</b> коли фондът само расте — минава <b>${fmt(MS)}</b> (в днешни пари) ~<b>${monthLabel(msMonth)}</b>.`;
+  } else if (expected.cars >= maxCars){
+    msEl.className = 'fi-note out';
+    msEl.innerHTML = `🏁 Достигаш тавана от <b>${maxCars}</b> коли — оттам нататък целият поток (${fmt(pm*maxCars+topup)}/мес) пълни фонда.`;
+  } else {
+    msEl.className = 'fi-note out';
+    msEl.textContent = 'Фондът се изпразва при всяка нова кола — затова стойността му остава ниска, докато трупаш коли. Доходът расте вместо него.';
+  }
+
+  drawFundChart(runs, H, inflM);
+  $('fundSummary').textContent =
+    `При ${apy.toFixed(apy%1?1:0)}% доходност S&P 500 фондът след покупките на коли е ${fmt(fundShown)} след ${horizonY} години`
+    + `${view === 'real' ? ' (в днешни пари)' : ''}. `
+    + `Предпазливо (−3%): ${fmt(show(runs[0].run.pot, H))}. Оптимистично (+3%): ${fmt(show(runs[2].run.pot, H))}.`;
+
+  // ---- monthly cashflow (at the present, 1 car) ----
+  renderFlow(pm, topup, payment, 1);
+
+  // ---- credit chart ----
+  drawLoanChart(expected, P, H);
+  const payoffM = expected.loanArr.findIndex(v => v <= 0.005);
+  const loanNote = $('loanNote');
+  if (payment <= P*rate/100/12 && rate > 0){
+    loanNote.innerHTML = `⚠️ Вноската не покрива лихвата — увеличи я. Печалбата от таксито (${fmt(pm)}/мес) така или иначе я надхвърля.`;
+  } else if (payoffM > 0){
+    loanNote.innerHTML = `Кредитът се изплаща ~<b>${monthLabel(payoffM)}</b>. Месечната вноска (${fmt(payment)}) е по-малка от печалбата на едно такси (${fmt(pm)}) — наемът сам го носи.`;
+  } else {
+    loanNote.innerHTML = `Месечната вноска (${fmt(payment)}) е по-малка от печалбата на едно такси (${fmt(pm)}) — наемът сам носи кредита.`;
+  }
+  $('loanSummary').textContent = payoffM > 0
+    ? `Остатъкът по кредита пада от ${fmt(P)} до 0 € за ${payoffM} месеца (≈ ${monthLabel(payoffM)}).`
+    : `Остатъкът по кредита намалява от ${fmt(P)} по график.`;
+
+  // ---- payback ----
+  renderPayback(carCost, pm, paybackMo);
+}
+
+function drawCarsChart(run, H, maxCars){
+  if (!HAS_CHART || !isVisible($('carsChart'))) return;
+  const labels = Array.from({length:H+1}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
+  if (carsChart) carsChart.destroy();
+  carsChart = new Chart($('carsChart'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'коли', data:run.carsArr, borderColor:C.green, borderWidth:2.5, stepped:true,
+        pointRadius:0, fill:true,
+        backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(31,77,58,.10)';
+          const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(31,77,58,.32)'); g.addColorStop(1,'rgba(31,77,58,.03)'); return g; } },
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation: REDUCE ? false : { duration:550 },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ title:(it)=>monthLabel(it[0].dataIndex),
+          label:(it)=> `${it.raw} ${plural(it.raw,'кола','коли')} · ${fmt(it.raw * 4 * (+$('weekly').value||0))}/мес` } },
+      },
+      scales:{
+        x:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, maxRotation:0, autoSkip:false,
+            callback:function(v){ return this.getLabelForValue(v) || ''; } } },
+        y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, precision:0, stepSize:1 },
+            beginAtZero:true, suggestedMax: maxCars + 1 },
+      },
+    },
+  });
+}
+
+function drawFundChart(runs, H, inflM){
+  if (!HAS_CHART || !isVisible($('fundChart'))) return;
+  const disp = (v, m) => view === 'real' ? v / Math.pow(1 + inflM, m) : v;
+  const labels = Array.from({length:H+1}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
+  const datasets = runs.map(({s, run})=> ({
+    label:s.label, data:run.potArr.map((v,i)=>disp(v,i)), borderColor:s.color, borderWidth:s.width,
+    pointRadius:0, tension:.15, hidden: !!hidden[s.label],
+    fill: s.d === 0,
+    backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(207,91,65,.10)';
+      const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(207,91,65,.28)'); g.addColorStop(1,'rgba(207,91,65,.02)'); return g; },
+  }));
+  if (fundChart) fundChart.destroy();
+  fundChart = new Chart($('fundChart'), {
+    type:'line',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation: REDUCE ? false : { duration:550 },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{
+          onClick:(e, item)=>{ const lbl = item.text; hidden[lbl] = !hidden[lbl]; render(); },
+          labels:{ color:C.greenSoft, font:{family:'Hanken Grotesk', size:12}, usePointStyle:true, boxWidth:8 } },
+        tooltip:{ callbacks:{ title:(it)=>monthLabel(it[0].dataIndex), label:(it)=> it.dataset.label+': '+fmt(it.raw) } },
+      },
+      scales:{
+        x:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, maxRotation:0, autoSkip:false,
+            callback:function(v){ return this.getLabelForValue(v) || ''; } } },
+        y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, callback:v=> v>=1000? Math.round(v/1000)+'к' : Math.round(v) }, beginAtZero:true },
+      },
+    },
+  });
+  buildScenarioToggles(datasets);
+}
+
+// keyboard-accessible mirror of the chart legend — buttons screen readers and Tab can reach
+function buildScenarioToggles(datasets){
+  const box = $('scenarioToggles');
+  if (!box) return;
+  box.innerHTML = '';
+  datasets.forEach(ds=>{
+    const visible = !hidden[ds.label];
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'toggle';
+    b.setAttribute('aria-pressed', String(visible));
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = ds.borderColor;
+    b.appendChild(dot); b.appendChild(document.createTextNode(ds.label));
+    b.addEventListener('click', ()=>{ hidden[ds.label] = !hidden[ds.label]; render(); });
+    box.appendChild(b);
+  });
+}
+
+function drawLoanChart(run, P, H){
+  if (!HAS_CHART || !isVisible($('loanChart'))) return;
+  const labels = Array.from({length:H+1}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
+  if (loanChart) loanChart.destroy();
+  loanChart = new Chart($('loanChart'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'остатък по кредита', data:run.loanArr, borderColor:C.coral, borderWidth:2.5,
+        pointRadius:0, tension:.25, fill:true,
+        backgroundColor:(ctx)=>{ const {ctx:c, chartArea:a}=ctx.chart; if(!a) return 'rgba(207,91,65,.12)';
+          const g=c.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,'rgba(207,91,65,.40)'); g.addColorStop(1,'rgba(207,91,65,.03)'); return g; } },
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation: REDUCE ? false : { duration:550 },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ title:(it)=>monthLabel(it[0].dataIndex), label:(it)=> 'остатък: '+fmt(it.raw) } },
+      },
+      scales:{
+        x:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, maxRotation:0, autoSkip:false,
+            callback:function(v){ return this.getLabelForValue(v) || ''; } } },
+        y:{ grid:{ color:C.line }, ticks:{ color:C.greenSoft, font:{size:11}, callback:v=> Math.round(v/1000)+'к' }, beginAtZero:true },
+      },
+    },
+  });
+}
+
+function renderFlow(pm, topup, payment, cars){
+  const profit = pm * cars;
+  const parts = [
+    { name:'Печалба → S&P фонд', v:profit,  c:C.gold },
+    { name:'Заплата → S&P фонд', v:topup,   c:C.sage },
+    { name:'Вноска по кредита',  v:payment, c:C.coral },
+  ].filter(p=> p.v > 0.5);
+  const total = Math.max(1, parts.reduce((s,p)=> s+p.v, 0));
+
+  $('flowCars').textContent = cars;
+  $('flowNet').textContent = fmt(profit + topup);
+
+  if (HAS_CHART && isVisible($('flowChart'))){
+    if (flowChart) flowChart.destroy();
+    flowChart = new Chart($('flowChart'), {
+      type:'doughnut',
+      data:{ labels:parts.map(p=>p.name), datasets:[{
+        data:parts.map(p=>p.v), backgroundColor:parts.map(p=>p.c),
+        borderColor:C.card, borderWidth:2, hoverOffset:6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', animation: REDUCE ? false : { duration:550 },
+        plugins:{ legend:{ display:false },
+          tooltip:{ callbacks:{ label:(it)=> `${it.label}: ${fmt(it.raw)} (${Math.round(it.raw/total*100)}%)` } } } },
+    });
+  }
+
+  const leg = $('flowLegend'); leg.innerHTML = '';
+  parts.forEach(p=>{
+    const l = document.createElement('div');
+    l.innerHTML = `<i style="background:${p.c}"></i>${p.name} · <b>${fmt(p.v)}</b> <span class="pct">(${Math.round(p.v/total*100)}%)</span>`;
+    leg.appendChild(l);
+  });
+
+  const facts = [
+    `Печалбата на едно такси (<b>${fmt(profit)}</b>) сама покрива вноската по кредита (<b>${fmt(payment)}</b>) ${profit>=payment?'и още остава':'почти'}.`,
+    `Всеки месец <b>${fmt(profit + topup)}</b> отиват в S&P 500 — ${fmt(profit)} „безплатни“ от таксито + ${fmt(topup)} от заплата.`,
+    `Щом дойде втора кола, печалбата се удвоява (${fmt(profit*2)}) — а вноската по кредита си остава същата.`,
+  ];
+  const ul = $('flowFacts'); ul.innerHTML = '';
+  facts.forEach(f=>{ const li=document.createElement('li'); li.innerHTML=f; ul.appendChild(li); });
+
+  $('flowNote').textContent = payment > profit
+    ? 'Засега една кола не стига да покрие цялата вноска — но щом дойде втора, печалбата надхвърля кредита с разлика.'
+    : 'Наемът носи кредита от ден едно. Заделеното от заплата е малката цена, която ускорява снежната топка.';
+}
+
+function renderPayback(carCost, pm, paybackMo){
+  // visualise repayment of ONE car's stake over its first 12 months
+  const window12 = Math.min(12, paybackMo);
+  const pct = Math.round(window12 / paybackMo * 100);
+  $('paybackBar').style.width = (pm > 0 ? Math.min(100, Math.round(pm*12 / carCost * 100)) : 0) + '%';
+  $('paybackInvested').textContent = fmt(carCost);
+  $('paybackMonths').textContent = pm > 0 ? paybackMo + ' мес' : '—';
+
+  const note = $('paybackNote');
+  if (pm <= 0){
+    note.textContent = 'Въведи печалбата от наема, за да изчисля възвръщаемостта.';
+  } else {
+    const roi = Math.round(pm * 12 / carCost * 100);
+    note.innerHTML = `Вложените <b>${fmt(carCost)}</b> се връщат за <b>${paybackMo} месеца</b> (${monthLabel(paybackMo)}). Това е ~<b>${roi}%</b> брутна годишна възвръщаемост от наема.`;
+  }
+
+  const facts = [
+    'Наемът е „сигурен“ само докато колата е отдадена — заложи реалистично простоите и ремонтите.',
+    `След като се изплати, печалбата е чист доход, който пълни S&P фонда за следваща кола.`,
+  ];
+  const ul = $('paybackFacts'); ul.innerHTML = '';
+  facts.forEach(f=>{ const li=document.createElement('li'); li.innerHTML=f; ul.appendChild(li); });
+}
+
+// ---- events ----
+$('payment').addEventListener('input', ()=>{ paymentTouched = true; });
+$('resetPay').addEventListener('click', ()=>{ paymentTouched = false; render(); });
+function setView(v){
+  view = v;
+  $('viewNominal').setAttribute('aria-pressed', String(v === 'nominal'));
+  $('viewReal').setAttribute('aria-pressed', String(v === 'real'));
+  $('viewNote').textContent = v === 'real'
+    ? 'Сумите са в днешни пари — какво ще купуват реално след инфлация.'
+    : 'Сумите са номинални — колкото ще пише в сметката, без корекция за инфлация.';
+  render();
+}
+$('viewNominal').addEventListener('click', ()=> setView('nominal'));
+$('viewReal').addEventListener('click', ()=> setView('real'));
+document.querySelectorAll('input').forEach(el=> el.addEventListener('input', render));
+
+if (!HAS_CHART){
+  document.querySelectorAll('.chart-box, .donut-wrap').forEach(b=>{
+    b.innerHTML = '<div class="chart-fallback">Графиките не се заредиха (библиотеката е блокирана). Числата по-горе остават валидни.</div>';
+  });
+}
+setView('nominal');
+render();
+</script>
+</body>
+</html>
