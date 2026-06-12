@@ -220,9 +220,53 @@
   .cb-row.total b { color:var(--green); }
   .cb-row.grand { border-bottom:none; font-size:.9rem; margin-top:.15rem; }
   .cb-row.grand b { color:var(--gold); font-family:'Fraunces', serif; font-size:1.15rem; }
+
+  /* ---------- light visual refresh (shared by both prototypes) ---------- */
+  body { padding:24px 18px 44px; }
+  .wrap { max-width:1060px; }
+  .card { border-radius:16px; padding:1.25rem 1.4rem; margin-bottom:1.05rem;
+          box-shadow:0 1px 2px rgba(34,40,31,.04); }
+  .card:hover { box-shadow:0 12px 36px rgba(34,40,31,.09); }
+  h2 { font-size:1.16rem; margin-bottom:1rem; }
+  .hero .count { font-size:clamp(2.9rem,8vw,4.1rem); }
+  .grow-head .big { font-size:clamp(2.15rem,6.5vw,3.05rem); }
+  .chart-box { height:244px; }
+
+  /* inputs: readable, tappable, never truncated — grid sizes to its CONTAINER, not the viewport */
+  .grid { grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:1.05rem .9rem; }
+  label { gap:.42rem; }
+  label .cap { font-size:.66rem; letter-spacing:.05em; line-height:1.3; min-height:2.3em;
+               display:flex; align-items:flex-end; }
+  .field { padding:.6rem .7rem; border-radius:10px; min-height:46px; }
+  .field input { font-size:1rem; }            /* 16px — avoids iOS zoom on focus, reads cleaner */
+  .hint { font-size:.7rem; line-height:1.4; margin-top:.4rem; }
+
+  /* grouped inputs — clear section rhythm */
+  .group { margin:0; }
+  .group + .group { margin-top:1.25rem; padding-top:1.15rem; border-top:1px solid var(--line); }
+  .subhead { font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em;
+             color:var(--green); opacity:.78; margin:0 0 .9rem; }
+  details.adv { margin-top:1.25rem; }
+
+
+  /* ---------- two-column workspace layout ---------- */
+  /* use the full width of the screen — only a thin gutter left/right */
+  body.v-columns { padding:22px 12px 40px; }
+  .v-columns .wrap { max-width:none; }
+  .app { display:grid; grid-template-columns:1fr; gap:1rem; }
+  @media (min-width:920px){
+    .app { grid-template-columns:380px 1fr; align-items:start; }
+    .inputs-col { position:sticky; top:14px; max-height:calc(100vh - 28px); overflow:auto;
+                  -webkit-overflow-scrolling:touch; }
+    .inputs-col .card { margin-bottom:0; }
+  }
+  /* a narrow rail reads best as ONE stacked column — no clipped numbers, no 3-line labels */
+  .v-columns .inputs-col .grid { grid-template-columns:1fr; gap:.95rem; }
+  .v-columns .inputs-col label .cap { min-height:0; }
+  .results-col > .card:first-child { margin-top:0; }
 </style>
 </head>
-<body>
+<body class="v-columns">
 <div class="wrap">
 
   <header>
@@ -230,8 +274,76 @@
     <h1>Пътят до <em>0 €</em> — и нагоре</h1>
   </header>
 
-  <!-- HERO -->
-  <div class="card hero">
+  <div class="app">
+
+    <div class="inputs-col">
+    <div class="card">
+    <h2>Твоите данни</h2>
+      <div class="group">
+        <p class="subhead">Доходи и разходи</p>
+        <div class="grid">
+        <label><span class="cap">Месечна заплата (нето)</span>
+        <span class="field"><input type="number" id="salary" value="1650" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+        <label><span class="cap">Разходи за живот / месец</span>
+        <span class="field"><input type="number" id="essentials" value="800" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">наем, храна, сметки, транспорт</span></label>
+        </div>
+      </div>
+      <div class="group">
+        <p class="subhead">Кредит</p>
+        <div class="grid">
+        <label><span class="cap">Остатък по кредита</span>
+        <span class="field"><input type="number" id="principal" value="13000" step="100" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+        <label><span class="cap">Годишен лихвен % (ГПР)</span>
+        <span class="field"><input type="number" id="rate" value="4.4" step="0.1" min="0" max="100" inputmode="decimal"><span class="suffix">%</span></span>
+        <span class="hint">променлива — обновявай я</span></label>
+        <label><span class="cap">Оставащ срок</span>
+        <span class="field"><input type="number" id="term" value="120" step="1" min="1" max="600" inputmode="numeric"><span class="suffix">мес</span></span></label>
+        <label><span class="cap">Месечна вноска</span>
+        <span class="field"><input type="number" id="payment" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">по срока: <b id="suggestPay">—</b> · <button type="button" class="reset" id="resetPay">нулирай</button></span></label>
+        <label><span class="cap">Заделям отгоре / месец</span>
+        <span class="field"><input type="number" id="extra" value="0" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint" id="freeHint">разполагаеми: —</span></label>
+        </div>
+      </div>
+      <div class="group" id="investGroup">
+      <p class="subhead">Инвестиции — по холдинг</p>
+      <div id="holdings"></div>
+      <button type="button" class="addhold" id="addHolding"><span class="plus" aria-hidden="true">+</span>добави инвестиция</button>
+      <p class="hint" id="investTotal">—</p>
+    </div>
+      <div class="group">
+        <p class="subhead">Стабилност</p>
+        <div class="grid">
+        <label><span class="cap">Авариен фонд сега</span>
+        <span class="field"><input type="number" id="emergencyNow" value="0" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
+        <label><span class="cap">За авариен фонд / мес</span>
+        <span class="field"><input type="number" id="emergencyMonthly" value="150" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+        <span class="hint">15% препоръка: <b id="suggestEmergency">—</b></span></label>
+        </div>
+      </div>
+      <details class="adv">
+        <summary>Разширени допускания</summary>
+        <div class="grid">
+          <label><span class="cap">Хоризонт</span>
+          <span class="field"><input type="number" id="horizon" value="20" step="1" min="1" max="50" inputmode="numeric"><span class="suffix">год</span></span></label>
+          <label><span class="cap">Вече инвестирано</span>
+          <span class="field"><input type="number" id="investStart" value="40" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
+          <span class="hint">Trading 212 · акции, злато, S&amp;P 500</span></label>
+          <label><span class="cap">Инфлация / год</span>
+          <span class="field"><input type="number" id="inflation" value="2.5" step="0.1" min="0" max="20" inputmode="decimal"><span class="suffix">%</span></span>
+          <span class="hint">за изчисляване на „днешни пари“</span></label>
+          <label><span class="cap">Покачвам вноската / год</span>
+          <span class="field"><input type="number" id="escalate" value="0" step="1" min="0" max="50" inputmode="decimal"><span class="suffix">%</span></span>
+          <span class="hint">при всяко покачване на доходите</span></label>
+        </div>
+      </details>
+  </div>
+    </div>
+
+    <div class="results-col">
+    <div class="card hero">
     <div aria-live="polite">
       <p class="sub">Свободен от кредита след</p>
       <div class="count" id="payoffCount">— <small>мес.</small></div>
@@ -244,73 +356,13 @@
       <div class="chip"><p class="l">Богатство след <span id="chipHorizonYrs">20</span>г.</p><p class="v" id="chipWealth">—</p></div>
     </div>
   </div>
-
-  <!-- INPUTS -->
-  <div class="card">
-    <h2>Твоите данни</h2>
-    <div class="grid">
-      <label><span class="cap">Месечна заплата (нето)</span>
-        <span class="field"><input type="number" id="salary" value="1650" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
-      <label><span class="cap">Разходи за живот / месец</span>
-        <span class="field"><input type="number" id="essentials" value="800" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-        <span class="hint">наем, храна, сметки, транспорт</span></label>
-      <label><span class="cap">Остатък по кредита</span>
-        <span class="field"><input type="number" id="principal" value="13000" step="100" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
-      <label><span class="cap">Годишен лихвен % (ГПР)</span>
-        <span class="field"><input type="number" id="rate" value="4.4" step="0.1" min="0" max="100" inputmode="decimal"><span class="suffix">%</span></span>
-        <span class="hint">променлива — обновявай я</span></label>
-      <label><span class="cap">Оставащ срок</span>
-        <span class="field"><input type="number" id="term" value="120" step="1" min="1" max="600" inputmode="numeric"><span class="suffix">мес</span></span></label>
-      <label><span class="cap">Месечна вноска</span>
-        <span class="field"><input type="number" id="payment" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-        <span class="hint">по срока: <b id="suggestPay">—</b> · <button type="button" class="reset" id="resetPay">нулирай</button></span></label>
-      <label><span class="cap">Заделям отгоре / месец</span>
-        <span class="field"><input type="number" id="extra" value="0" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-        <span class="hint" id="freeHint">разполагаеми: —</span></label>
-      <label><span class="cap">Авариен фонд сега</span>
-        <span class="field"><input type="number" id="emergencyNow" value="0" step="50" min="0" inputmode="decimal"><span class="suffix">€</span></span></label>
-      <label><span class="cap">За авариен фонд / мес</span>
-        <span class="field"><input type="number" id="emergencyMonthly" value="150" step="25" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-        <span class="hint">15% препоръка: <b id="suggestEmergency">—</b></span></label>
-    </div>
-
-    <!-- HOLDINGS -->
-    <div class="group" id="investGroup">
-      <p class="subhead">Инвестиции — по холдинг</p>
-      <div id="holdings"></div>
-      <button type="button" class="addhold" id="addHolding"><span class="plus" aria-hidden="true">+</span>добави инвестиция</button>
-      <p class="hint" id="investTotal">—</p>
-    </div>
-    <!-- /HOLDINGS -->
-
-    <details class="adv">
-      <summary>Разширени допускания</summary>
-      <div class="grid">
-        <label><span class="cap">Хоризонт</span>
-          <span class="field"><input type="number" id="horizon" value="20" step="1" min="1" max="50" inputmode="numeric"><span class="suffix">год</span></span></label>
-        <label><span class="cap">Вече инвестирано</span>
-          <span class="field"><input type="number" id="investStart" value="40" step="10" min="0" inputmode="decimal"><span class="suffix">€</span></span>
-          <span class="hint">Trading 212 · акции, злато, S&amp;P 500</span></label>
-        <label><span class="cap">Инфлация / год</span>
-          <span class="field"><input type="number" id="inflation" value="2.5" step="0.1" min="0" max="20" inputmode="decimal"><span class="suffix">%</span></span>
-          <span class="hint">за изчисляване на „днешни пари“</span></label>
-        <label><span class="cap">Покачвам вноската / год</span>
-          <span class="field"><input type="number" id="escalate" value="0" step="1" min="0" max="50" inputmode="decimal"><span class="suffix">%</span></span>
-          <span class="hint">при всяко покачване на доходите</span></label>
-      </div>
-    </details>
-  </div>
-
-  <!-- LOAN CHART -->
-  <div class="card">
+    <div class="card">
     <h2>Остатъкът по кредита пада до нула</h2>
     <div class="chart-box"><canvas id="chart" role="img" aria-label="Графика на остатъка по кредита във времето"></canvas></div>
     <p class="sr-only" id="chartSummary"></p>
     <p class="encourage" id="encourage"></p>
   </div>
-
-  <!-- GROWTH / INVESTMENTS -->
-  <div class="card">
+    <div class="card">
     <h2>Парите ти растат <span class="h2sub">Растеж · 25%</span></h2>
 
     <div style="display:flex; flex-wrap:wrap; gap:.5rem .9rem; align-items:center;">
@@ -344,9 +396,7 @@
     <p class="sr-only" id="investSummary"></p>
     <p class="note">Три сценария, не обещание: всяка инвестиция расте по своята очаквана доходност (<b>очаквано</b>), а <b>предпазливо</b> и <b>оптимистично</b> са −3% / +3% върху нея. Доходностите са исторически средни (виж „г. ср.“ за периода), не гаранция — никое десетилетие не е сигурно. Времето на пазара бие размера на вноската.</p>
   </div>
-
-  <!-- LOAN vs INVEST -->
-  <div class="card">
+    <div class="card">
     <h2>Кредит или инвестиции? <span class="h2sub">при микс ~<span id="cmpRate">7</span>% · хоризонт <span id="cmpYears">20</span> год.</span></h2>
     <div class="verdict">
       <div class="strat" id="stratSprint">
@@ -365,9 +415,7 @@
     <p class="verdict-line" id="verdictLine"></p>
     <p class="note">Чисто богатство = инвестиции − остатък по кредита, след хоризонта. Лихвата ти (4.4%) е <i>гарантираната</i> доходност от плащане отгоре по кредита; пазарът се <i>очаква</i> да даде повече, но с риск и колебания.</p>
   </div>
-
-  <!-- STABILITY / EMERGENCY FUND -->
-  <div class="card">
+    <div class="card">
     <h2>Авариен фонд <span class="h2sub">Стабилност · 15%</span></h2>
     <div class="stab-layout">
       <div>
@@ -378,9 +426,7 @@
       <ul class="facts" id="emergencyFacts"></ul>
     </div>
   </div>
-
-  <!-- BUDGET = FREEDOM -->
-  <div class="card">
+    <div class="card">
     <h2>Заплатата ти = свобода</h2>
     <div class="budget-layout">
       <div class="donut-wrap">
@@ -396,6 +442,9 @@
       </div>
     </div>
     <p class="note" id="budgetNote"></p>
+  </div>
+    </div>
+
   </div>
 
   <p class="disclaimer">Образователен инструмент, не финансов съвет. Лихвата по кредита е променлива — обновявай я при промяна. Прогнозите за инвестиции са оценки при постоянна доходност; реалните пазари се колебаят и доходността не е гарантирана. Вноската по подразбиране е анюитетна (равна) по срока.</p>
@@ -551,6 +600,7 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const HAS_CHART = typeof Chart !== 'undefined'; // graceful if the CDN library is blocked
 
 const $ = id => document.getElementById(id);
+const isVisible = el => !!(el && el.offsetParent !== null);
 
 function render(){
   // clamp money inputs at 0 — a negative salary/loan/contribution is nonsensical
@@ -739,6 +789,7 @@ function render(){
 
 function drawLoanChart(plan, baseOnly, P){
   if (!HAS_CHART) return;
+  if (!isVisible($('chart'))) return;
   const len = Math.max(plan.rows.length, baseOnly.rows.length);
   const labels = Array.from({length:len}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
   if (chart) chart.destroy();
@@ -771,6 +822,7 @@ function drawLoanChart(plan, baseOnly, P){
 
 function drawInvestChart(scenarioRuns, H, FI, inflM){
   if (!HAS_CHART) return;
+  if (!isVisible($('investChart'))) return;
   const disp = (v, m) => view === 'real' ? v / Math.pow(1 + inflM, m) : v; // per-point display value
   const labels = Array.from({length:H+1}, (_,i)=> ((START.m + i) % 12 === 0) ? String(yearOf(i)) : '');
   const datasets = scenarioRuns.map(({s, run})=> ({
@@ -903,7 +955,7 @@ function renderBudget(salary, essentials, base, extra, investMo, emMo, free, int
     { name:'Остава буфер',      v:buffer,     c:C.taupe },
   ].filter(p=> p.v > 0.5);
 
-  if (HAS_CHART){
+  if (HAS_CHART && isVisible($('budgetChart'))){
   if (budgetChart) budgetChart.destroy();
   budgetChart = new Chart($('budgetChart'), {
     type:'doughnut',
