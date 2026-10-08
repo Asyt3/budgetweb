@@ -467,7 +467,7 @@ function renderGL(list) {
   gl.useProgram(scene.p); const u = scene.u;
   gl.uniform2f(u.u_res, W, H); gl.uniform1f(u.u_scale, S.glScale); gl.uniform1f(u.u_time, S.time); gl.uniform1f(u.u_n, n);
   gl.uniform4fv(u.u_b, bufB); gl.uniform4fv(u.u_c, bufC); gl.uniform4fv(u.u_x, bufX); gl.uniform4fv(u.u_h, bufH);
-  gl.uniform1f(u.u_persist, Math.pow(0.5, S.dtFrame / 0.022)); gl.uniform3f(u.u_bg, 0.012, 0.030, 0.019); gl.uniform1f(u.u_gain, S.look.crt ? 0.93 : 0.81);      // auto-exposure is crt-aware: scanlines + vignette are part of the budget
+  gl.uniform1f(u.u_persist, Math.pow(0.5, S.dtFrame / 0.022)); gl.uniform3f(u.u_bg, 0.012, 0.030, 0.019); gl.uniform1f(u.u_gain, S.look.crt ? 0.93 : 0.80);      // auto-exposure is crt-aware: scanlines + vignette are part of the budget
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, src.tex); gl.uniform1i(u.u_prev, 0);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
