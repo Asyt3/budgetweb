@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Cold Boot Look Lab v3 · playtest</title>
+<title>Cold Boot Look Lab v4 · playtest</title>
 <style>[hidden]{display:none!important}html,body{margin:0}</style>
 <style>
-/* Look lab v3: playable feel-test of the socket-ring loop.
-   Three zones that never overlap: terminal | ring | grid (+ look panel). Single committed dark look. */
+/* Look lab v4: playable feel-test of FREE PHYSICS with bump-to-fuse (Suika-style). The v3 socket ring is gone.
+   Three zones that never overlap: terminal | chamber | grid (+ look panel). Single committed dark look. */
 :root {
   --void: #030805;
   --pane: #04120a;
@@ -33,7 +33,7 @@ button, input { font-family: inherit; }
   display: grid; gap: 16px; padding: 16px; height: 100vh; min-height: 560px;
   grid-template-columns: var(--tw) minmax(0, 1fr) var(--gw);
   grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas: "term ring grid" "term ring look";
+  grid-template-areas: "term chamber grid" "term chamber look";
 }
 
 /* ---- terminal ---- */
@@ -74,9 +74,9 @@ button, input { font-family: inherit; }
 .prompt input::placeholder { color: var(--ui-dim); opacity: 1; }
 .prompt:focus-within { border-top-color: var(--ui); }
 
-/* ---- ring zone ---- */
-.ringbox { grid-area: ring; align-self: center; justify-self: center; position: relative; width: var(--z); height: var(--z); background: #040b07; }
-.ringbox::after { content: ""; position: absolute; inset: 0; border: 1px solid #14301f; pointer-events: none; }
+/* ---- chamber zone ---- */
+.chamber { grid-area: chamber; align-self: center; justify-self: center; position: relative; width: var(--z); height: var(--z); background: #040b07; }
+.chamber::after { content: ""; position: absolute; inset: 0; border: 1px solid #14301f; pointer-events: none; }
 .shake { position: absolute; inset: 0; }
 .shake canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
 #gl { touch-action: none; outline: none; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -124,7 +124,7 @@ body.hy .log li::before { content: "> "; color: var(--ui-dim); }
 /* ---- phone ---- */
 @media (max-width: 700px) {
   .app { display: flex; flex-direction: column; gap: 6px; padding: 8px 16px 8px; height: auto; min-height: 100vh; }
-  .ringbox { order: 1; align-self: center; }
+  .chamber { order: 1; align-self: center; }
   .gridbox { order: 2; }
   .pane { order: 3; }
   .gridbox { width: 100%; height: 160px; display: flex; gap: 12px; padding: 0; background: transparent; border: 0; }
@@ -163,7 +163,7 @@ body.hy .log li::before { content: "> "; color: var(--ui-dim); }
 <body>
 <div class="app" id="app">
   <section class="pane" id="pane" aria-label="Terminal">
-    <div class="pane-h"><span>mainframe/0 · lab v3</span><span class="tag">feel test</span></div>
+    <div class="pane-h"><span>mainframe/0 · lab v4</span><span class="tag">feel test</span></div>
     <div class="lux"><span class="k">lux</span><span id="lux" class="big">0</span><span id="rate" class="r">+0 lx/s</span></div>
     <div class="sub" id="sub"></div>
     <p class="next" id="next"></p>
@@ -187,9 +187,9 @@ body.hy .log li::before { content: "> "; color: var(--ui-dim); }
     </form>
   </section>
 
-  <main class="ringbox" id="ringbox">
+  <main class="chamber" id="chamber">
     <div class="shake" id="shake">
-      <canvas id="gl" tabindex="0" role="application" aria-label="Socket ring around a glowing core." aria-describedby="ringsum"></canvas>
+      <canvas id="gl" tabindex="0" role="application" aria-label="Chamber of free-floating blobs around a glowing core." aria-describedby="chsum"></canvas>
       <canvas id="ov" aria-hidden="true"></canvas>
     </div>
   </main>
@@ -214,7 +214,7 @@ body.hy .log li::before { content: "> "; color: var(--ui-dim); }
       <button type="button" data-k="pal" data-v="rainbow" aria-pressed="true">rainbow</button><button type="button" data-k="pal" data-v="ramp" aria-pressed="false">ramp</button></div>
     <div class="grp" role="group" aria-label="Effects"><span class="lbl" aria-hidden="true">fx</span>
       <button type="button" id="tg-crt" aria-pressed="true">crt on</button><button type="button" id="tg-snd" aria-pressed="true">sound on</button></div>
-    <div class="grp" role="group" aria-label="Ring sockets"><span class="lbl" aria-hidden="true">sockets</span>
+    <div class="grp" role="group" aria-label="Buffer size"><span class="lbl" aria-hidden="true">buffer</span>
       <button type="button" data-k="n" data-v="12" aria-pressed="true">12</button><button type="button" data-k="n" data-v="14" aria-pressed="false">14</button><button type="button" data-k="n" data-v="16" aria-pressed="false">16</button></div>
     <div class="grp" role="group" aria-label="Preview state"><span class="lbl" aria-hidden="true">preview</span>
       <button type="button" data-k="pv" data-v="early" aria-pressed="false">early</button><button type="button" data-k="pv" data-v="mid" aria-pressed="false">mid</button><button type="button" data-k="pv" data-v="late" aria-pressed="false">late</button></div>
@@ -222,15 +222,15 @@ body.hy .log li::before { content: "> "; color: var(--ui-dim); }
       <button type="button" id="tg-tell" aria-pressed="false">window tell off</button></div>
     <div class="grp"><label for="calib">calibrate</label><input type="range" id="calib" min="-80" max="80" step="5" value="0"><output id="calib-o" for="calib">0 ms</output></div>
     <details class="keys"><summary>keys</summary>
-      <p>Space pulse · 1-9 0 - = select sockets 1-12 (sockets 13-16 are mouse/touch only in this lab) · a second socket key merges the selected blob into it · V vent (press twice within 2 s for top tier or t8+) · B burst · M merge best pair · G catch glitch · Esc deselect</p>
-      <p>Drag a blob onto a twin to merge, onto the core to vent (top tier or t8+: hold 0.6 s). Tap a blob at its own peak to burst it. Typed: pulse, install amp|cap|fork, run pulse.d, run merge.d, vent n, look ..., help.</p>
+      <p>Space pulse · Tab / Shift+Tab (with the chamber focused) or arrow keys cycle the selected blob, shown with a focus ring · V vent it (press twice within 2 s for top tier or t8+) · B burst it · M flick the selected blob and its nearest twin together (no selection: the closest same-tier pair; counts as a manual merge, so tB + tB can make C) · G catch glitch · Esc deselect</p>
+      <p>Tap the core to pulse: the new blob flies at the nearest twin. Same-tier blobs that touch fuse, different tiers bounce. Drag a blob and let go to flick it; drag it onto a twin to merge by hand (tB + tB only fuses this way), onto the core to vent (top tier or t8+: hold 0.6 s). Tap a blob at its own peak to burst it. Typed: pulse, install amp|cap|fork, run pulse.d, run merge.d, vent [tier], look ..., help.</p>
     </details>
   </section>
 </div>
 <canvas id="fly" aria-hidden="true"></canvas>
 <p id="live" class="sr" aria-live="polite"></p>
 <p id="cmdlive" class="sr" aria-live="polite"></p>
-<p id="ringsum" class="sr"></p>
+<p id="chsum" class="sr"></p>
 <p id="gridsum" class="sr"></p>
 <script>
 (() => {
@@ -241,7 +241,6 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const TAU = Math.PI * 2;
 const easeOut = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
 const easeInOut = (t) => { t = clamp(t, 0, 1); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
-const backOut = (t) => { t = clamp(t, 0, 1); const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 const mq = matchMedia('(prefers-reduced-motion: reduce)');
 let reduce = mq.matches;
 const onMq = (e) => { reduce = e.matches; };
@@ -310,11 +309,12 @@ function etaStr(sec) {
 const P_MS = 2000;                        // core breath period; peaks at multiples of 2000 ms on the performance.now() clock
 const WIN = 160, NEAR = 400;              // resonance / burst window and near-miss window, ms
 const S = {
-  n: 12, sock: [], lux: 0, luxShown: 0, top: 1, ever: 1, lit: 0, nodes: [], own: { pulse: false, merge: false },
-  pulseT: 4, mergeT: 2, judgedCycle: -1e9, lastJudge: null, fullShown: false, fullA: 0, sel: -1, selUntil: 0, idxUntil: 0,
+  cap: 12, blobs: [], lux: 0, luxShown: 0, top: 1, ever: 1, lit: 0, nodes: [], own: { pulse: false, merge: false },
+  pulseT: 4, mergeT: 2, judgedCycle: -1e9, lastJudge: null, fullShown: false, fullA: 0, sel: 0,
   look: { render: 'smooth', pal: 'rainbow', crt: true, sound: true, calib: 0, tell: false },
   Z: 496, narrow: false, dpr: 1, nextId: 1, glitch: null, nextGlitch: 8, tear: 0, ventArm: null, flash: 0, shake: 0, hit: 0, slow: 0,
-  ghost: { i: -1, fuse: false }, ghostTier: 1, tot: { A: 0, C: 0, F: 0, mult: 1, fork: 0, cap: 0 }, rate: 0,
+  tot: { A: 0, C: 0, F: 0, mult: 1, fork: 0, cap: 0 }, rate: 0,
+  simT: 0, acc: 0, paused: false, magnets: [], chains: [], nextChain: 1, chainMax: 0, fuses: 0, preSettle: false, quiet: false, tickT: [], lastTick: 0, lockHintT: 0,
   pulses: 0, spills: 0, merges: 0, dtFrame: 0.016, flashes: [], whisper: [], whisperM: [], banner: null, bannerT: 0, bloom: 0.3, time: 0, seed: 20261008, preview: 'early'
 };
 const Inc = {
@@ -329,7 +329,7 @@ const Inc = {
 const glc = $('gl'), ovc = $('ov'), octx = ovc.getContext('2d');
 let gl = null;
 try { gl = glc.getContext('webgl', { antialias: false, alpha: false }) || glc.getContext('experimental-webgl', { antialias: false, alpha: false }); } catch (e) { gl = null; }
-const MAXB = 28;
+const MAXB = 32;
 const VS = 'attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }';
 const SCENE_FS = `
 precision highp float;
@@ -337,8 +337,8 @@ precision highp float;
 uniform vec2 u_res; uniform float u_scale; uniform float u_time; uniform float u_n;
 uniform vec4 u_b[MAXB];   // x, y, radius, body brightness
 uniform vec4 u_c[MAXB];   // rgb, hot-backing amount (tinted white-hot centre under the digit)
-uniform vec4 u_x[MAXB];   // halo radius, halo strength, melt group (0/1/2), flag (1 corona, 2 core, 3 ghost)
-uniform vec4 u_h[MAXB];   // hot radius, breath 0..1 (halo + hot core only), halo alpha
+uniform vec4 u_x[MAXB];   // halo radius, halo strength, melt group (0/1/2), flag (1 corona, 2 core)
+uniform vec4 u_h[MAXB];   // hot radius, breath 0..1 (halo + hot core only), halo alpha, squash code (angle * 128 + amount)
 uniform sampler2D u_prev; uniform float u_persist; uniform vec3 u_bg; uniform float u_gain;
 void main() {
   vec2 p = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y) / u_scale;
@@ -348,7 +348,12 @@ void main() {
     if (float(i) >= u_n) break;
     vec4 b = u_b[i]; vec4 x = u_x[i]; vec4 h = u_h[i];
     vec2 dv = p - b.xy; float d = length(dv); float r = b.z;
-    if (d > max(x.x, r) + 2.0) continue;
+    if (d > max(x.x, r) * 1.15 + 2.0) continue;
+    if (h.w > 0.5) {                                                  // collision squash: compress along the contact normal, widen across it (<= 12 %, 110 ms)
+      float aq = floor(h.w / 128.0); float am = (h.w - aq * 128.0) / 127.0 * 0.12;
+      float th = aq / 256.0 * 3.14159265; vec2 nn = vec2(cos(th), sin(th));
+      dv = vec2(dot(dv, nn) / (1.0 - 0.75 * am), dot(dv, vec2(-nn.y, nn.x)) / (1.0 + am)); d = length(dv);
+    }
     float body = 1.0 - smoothstep(r - 1.1, r + 0.8, d);
     // halo: strength rises with tier (set on the CPU), clipped to the blob's own half-pitch, so it never reaches a neighbour
     float halo = 0.0;
@@ -369,7 +374,7 @@ void main() {
     float fade = max(1.5, 0.45 * (r - hotR));
     float hot = 1.0 - smoothstep(hotR, hotR + fade, d);
     float spark = 1.0 - smoothstep(0.0, hotR * 1.15, d);
-    float wmix = u_c[i].a * (0.46 * hot + 0.32 * h.y * spark) * (1.0 - 0.75 * pale);   // pastel tiers are already light: no extra white, so the late ring stays calm
+    float wmix = u_c[i].a * (0.46 * hot + 0.32 * h.y * spark) * (1.0 - 0.75 * pale);   // pastel tiers are already light: no extra white, so the late field stays calm
     vec3 bodyC = mix(tc, vec3(1.0), wmix);
     bodyC = mix(bodyC, gc, 0.85 * smoothstep(0.5 * r, 0.98 * r, d));    // saturated band from ~0.5 r to the rim
     bodyC *= mix(0.88, 1.0, 1.0 - smoothstep(r * 0.6, r, d));          // a touch deeper at the limb, still light
@@ -461,6 +466,7 @@ function renderGL(list) {
     bufC[i * 4] = e.col[0]; bufC[i * 4 + 1] = e.col[1]; bufC[i * 4 + 2] = e.col[2]; bufC[i * 4 + 3] = e.white;
     bufX[i * 4] = e.halo; bufX[i * 4 + 1] = e.haloS; bufX[i * 4 + 2] = e.group; bufX[i * 4 + 3] = e.flag;
     bufH[i * 4] = e.hotR; bufH[i * 4 + 1] = e.breath; bufH[i * 4 + 2] = e.ha;
+    if (e.sqv && e.sqv.amp > 0.002) { const aq = Math.round((((e.sqv.a % Math.PI) + Math.PI) % Math.PI) / Math.PI * 256) & 255, am = Math.round(clamp(e.sqv.amp / 0.12, 0, 1) * 127); bufH[i * 4 + 3] = aq * 128 + am; }
   }
   gl.viewport(0, 0, W, H);
   gl.bindFramebuffer(gl.FRAMEBUFFER, dst.fb);
@@ -480,41 +486,22 @@ function renderGL(list) {
   ping = 1 - ping;
 }
 
-// ---------- geometry (ring zone, css px, local to the square) ----------
-const G = { Z: 496, cx: 248, cy: 248, R: 196, k: 1.4, pitch: 77, coreR: 36, hmax: 30, emptyR: 18, pos: [] };
+// ---------- geometry (chamber zone, css px, local to the square) ----------
+// The chamber is a circle centred on the core. Its radius is the old v3 ring radius plus the largest blob radius, so the zone is filled with a margin.
+const G = { Z: 496, cx: 248, cy: 248, R: 196, Rc: 230, k: 1.4, Ks: 1, coreR: 36, pipR: 89, keep: 95, Rh: 150, band: 28 };
 const rOf = (t) => (9 + 1.4 * (Math.max(1, t) - 1)) * G.k;       // blob radius depends on tier only
 const breath = (x) => 0.5 + 0.5 * Math.cos(TAU * x);
-function ringFor(n, Z) {
-  const R = Z / 2 / 1.262;                                         // R + 1.5 r(tC) (max halo) just fits the zone
-  const chord = 2 * R * Math.sin(Math.PI / n);                     // distance between adjacent socket centres (not the arc)
-  const kmax = (chord - 6) / (2 * 24.4);                           // two tC blobs in adjacent sockets keep >= 6 px between rims
-  return { R, chord, k: Math.min(R / 140, kmax) };
-}
 function geometry() {
-  const half = S.Z / 2, n = S.n;
-  const { R, chord, k } = ringFor(n, S.Z);
-  const pitch = chord;
-  G.Z = S.Z; G.cx = G.cy = half; G.R = R; G.k = k; G.pitch = pitch; G.chord = chord; G.hmax = chord / 2 - 2; G.coreR = 26 * k; G.emptyR = 13 * k;
-  G.pos = [];
-  for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + TAU * i / n; G.pos.push({ x: half + R * Math.cos(a), y: half + R * Math.sin(a), a }); }
+  const R = S.Z / 2 / 1.262;                                         // the old ring radius: R + 1.5 r(tC) (the biggest halo) just fits the zone
+  G.Z = S.Z; G.cx = G.cy = S.Z / 2; G.R = R; G.k = R / 140; G.Ks = G.k / 1.4;
+  G.coreR = 26 * G.k; G.pipR = G.coreR * 2.45; G.keep = G.pipR + 6 * G.Ks;    // blobs keep out of a circle just outside the pip ring
+  G.Rc = R + rOf(12);                                                // chamber wall
+  G.Rh = G.keep + 0.45 * (G.Rc - G.keep); G.band = 0.2 * (G.Rc - G.keep);   // home band (centre distance Rh +- band) the gentle pull gathers blobs around
 }
-const gapTC = (n) => { const g = ringFor(n, S.Z); return g.chord - 2 * (9 + 1.4 * 11) * g.k; };
+const topY = () => G.cy - G.pipR - 14, botY = () => G.cy + G.pipR + 26;
 
-// ---------- view model (plays back what the logic already decided) ----------
-const V = { t: 0, end: 0, ops: [], sock: [], flights: [], rings: [], sparks: [], flies: [], arcs: [], floaters: [], sq: 0, outlineFlash: 0, resFlash: 0 };
-const mkvb = (b, tier) => ({ b, vt: tier, pop: 0, grow: 1, alpha: 1, fadeIn: false, dragging: false, away: false, flying: false, melt: 0, rim: 0 });
-function syncView() { V.ops = []; V.end = V.t; V.flights = []; V.sock = S.sock.map((b) => (b ? mkvb(b, b.tier) : null)); }
-function tx(manual) {
-  if (manual) flushView();                                          // any manual input snaps pending playback: the view never queues a tapped pulse behind a chain
-  let base = Math.max(V.t, V.end);
-  if (base - V.t > 0.45) { flushView(); base = V.t; }               // never let the view lag the logic by more than ~0.45 s
-  return { at(d, fn) { const at = base + d; V.ops.push({ at, fn }); V.ops.sort((a, b) => a.at - b.at); if (at > V.end) V.end = at; return at; } };
-}
-function flushView() {
-  const ops = V.ops; V.ops = []; ops.forEach((o) => o.fn());
-  let guard = 0; while (V.flights.length && guard++ < 60) { const f = V.flights.shift(); f.t = f.dur; if (f.onDone) f.onDone(); }
-  V.end = V.t;
-}
+// ---------- view model (effects only: the blobs themselves live in the physics world) ----------
+const V = { t: 0, rings: [], sparks: [], flies: [], arcs: [], floaters: [], melts: [], vents: [], wallHits: [], sq: 0, outlineFlash: 0, resFlash: 0 };
 
 // ---------- effects ----------
 const sparkCount = () => V.sparks.length + V.flies.length;
@@ -532,7 +519,7 @@ function floater(kind, text, x, y, size, tone, o) {
     f.x = x; f.size = size; return f;
   }
   while (V.floaters.length >= 4) V.floaters.shift();
-  f = { kind, text, x, y, size, tone, age: 0, life: o.life || 1.3, val: o.add || 0, fmt: o.fmt, zone: o.zone || 'ring' };
+  f = { kind, text, x, y, size, tone, age: 0, life: o.life || 1.3, val: o.add || 0, fmt: o.fmt, zone: o.zone || 'ch' };
   if (o.add !== undefined) f.text = o.fmt(f.val);
   for (let tries = 0; tries < 4; tries++) { if (V.floaters.some((q) => q.zone === f.zone && Math.abs(q.x - f.x) < 90 && Math.abs((q.y - q.age * 22) - f.y) < 17)) f.y += 18; else break; }
   V.floaters.push(f); return f;
@@ -557,7 +544,7 @@ function cmdSay(msg) { log(msg); $('cmdlive').textContent = ''; setTimeout(() =>
 
 // ---------- economy ----------
 const prod = (t) => 0.4 * Math.pow(3, t - 1) * S.tot.mult;
-function prodRate() { let s = 0; for (const b of S.sock) if (b) s += prod(b.tier); return s; }
+function prodRate() { let s = 0; for (const b of S.blobs) s += prod(b.tier); return s; }
 function gain(x) { S.lux += x; Inc.add(x); }
 function sameCount(k, t) { let c = 0; for (const j of NBR[k]) if (j < S.lit && S.nodes[j] === t) c++; return c; }
 function recalcTot() {
@@ -571,22 +558,13 @@ function installDelta(type) {
   return 1 + 0.5 * Math.min(2, same) + 0.5 * boost;
 }
 const pulseInterval = () => Math.max(0.25, 4.0 * Math.pow(0.92, S.tot.cap));    // lab clamp 0.25 s keeps late previews calm
-const newBlob = (tier) => { const per = 2200 + rng() * 600; return { id: S.nextId++, tier, per, t0: rng() * per, rest: 0, lock: 0 }; };
+const mkBlob = (tier, x, y, vx, vy, per, t0, seed) => ({ id: S.nextId++, tier, x, y, vx: vx || 0, vy: vy || 0, per, t0, seed, r: rOf(tier), rest: 0, lock: 0, dmn: 0, man: 0, cid: 0, held: false, dead: false, hide: 0, sq: 0, sqa: 0, sqm: 0, pop: 0, grow: 1, alpha: 1, fadeIn: false, rim: 0, shim: 0, shimA: 0, fx: null });
+const newBlob = (tier, x, y, vx, vy) => { const per = 2200 + rng() * 600; const t0 = rng() * per; const seed = rng() * 1000; return mkBlob(tier, x, y, vx, vy, per, t0, seed); };
 function noteTier(t) { if (t > S.top) S.top = t; if (t > S.ever) { S.ever = t; return true; } return false; }
-const isFull = () => S.sock.every(Boolean);
-const circDist = (i, j) => { const d = Math.abs(i - j); return Math.min(d, S.n - d); };
+const isFull = () => S.blobs.length >= S.cap;
+const byId = (id) => { for (const b of S.blobs) if (b.id === id) return b; return null; };
 
-// ---------- ghost + resonance ----------
-function ghostFor(tier) {
-  const n = S.n; let first = -1;
-  for (let i = 0; i < n; i++) {
-    if (S.sock[i]) continue;
-    if (first < 0) first = i;
-    const a = S.sock[(i + 1) % n], b = S.sock[(i - 1 + n) % n];
-    if ((a && a.tier === tier) || (b && b.tier === tier)) return { i, fuse: true };   // first empty socket that touches a twin
-  }
-  return { i: first, fuse: false };
-}
+// ---------- resonance (first tap of each breath is judged) ----------
 function peakOff(ts) { const x = ts / P_MS, k = Math.round(x); return { k, off: (x - k) * P_MS }; }
 function judgeCore(tsRaw) {
   const ts = tsRaw - S.look.calib;                                  // calibrate shifts the judged time only, never the drawing
@@ -600,216 +578,360 @@ function judgeCore(tsRaw) {
 const nearText = (off) => 'close · ' + (Math.ceil(Math.abs(off) / 10) / 100).toFixed(2) + ' s ' + (off < 0 ? 'early' : 'late');   // rounded away from the window: 161 ms reads 0.17 s, never 0.16 s
 function windowOpen(nowMs) { const { k, off } = peakOff(nowMs - S.look.calib); return S.judgedCycle !== k && Math.abs(off) <= WIN; }
 
-// ---------- touch-fuse chains (logic resolves instantly) ----------
-function partnerOf(i, t) {
-  const n = S.n, a = (i + 1) % n, b = (i - 1 + n) % n;
-  if (S.sock[a] && S.sock[a].tier === t) return a;
-  if (S.sock[b] && S.sock[b].tier === t) return b;
-  return -1;
+// ---------- physics: a fixed 120 Hz step owned by the frame loop ----------
+// Circles of radius r(tier), mass ~ r^2. A gentle radial pull gathers blobs on a home band around the core, linear damping settles the field,
+// the wall is elastic (0.6), different tiers bounce (0.7) and are fully separated every step, same tiers that touch FUSE. Fast bodies are sub-stepped so nothing tunnels.
+const DT = 1 / 120, MELT = 0.167;
+const PH = { damp: 1.7, well: 0.9, noise: 4.5, eWall: 0.6, eBlob: 0.7, eCore: 0.35, rest: 28, vmax: 1100, pop: 140, sqDur: 0.11, spring: 280, springC: 26, heldMass: 4, aimDeg: 20 };
+const massOf = (b) => { const r = rOf(b.tier); return r * r; };
+const physR = (b) => (b.hide > 0 ? lerp(rOf(b.tier - 1), rOf(b.tier), easeOut(1 - b.hide / MELT)) : rOf(b.tier));   // a fresh fuse grows into its radius while it melts
+
+function impact(a, b, v, nx, ny, wall) {                              // nx,ny: unit normal from a toward b (wall / core: pointing away from the centre)
+  const q = clamp(v / 300, 0.3, 1);
+  if (!reduce) { a.sq = 1; a.sqm = q; a.sqa = Math.atan2(ny, nx); if (b) { b.sq = 1; b.sqm = q; b.sqa = a.sqa; } }   // squash: <= 12% along / across the normal, 110 ms
+  if (wall === 'core') V.sq = Math.max(V.sq, 0.5 * q);
+  if (wall === 'wall' && !reduce) { while (V.wallHits.length >= 6) V.wallHits.shift(); V.wallHits.push({ ang: Math.atan2(ny, nx), a: q }); }
+  if (S.quiet) return;
+  const now = performance.now();
+  S.tickT = S.tickT.filter((t) => now - t < 1000);
+  if (S.tickT.length < 12 && now - S.lastTick > 30) { S.lastTick = now; S.tickT.push(now); Snd.bump(b ? (a.tier + b.tier) / 2 : a.tier, clamp(v / 520, 0.15, 1), wall); }
+  if (v > 300 * G.Ks && sparkCount() < 30) sparks(a.x + nx * a.r, a.y + ny * a.r, 2, PALS[S.look.pal][Math.min(a.tier, 12)], 55);
+  if (!wall && b && v > 380 * G.Ks && a.tier >= 7 && b.tier >= 7) shake(1.5);
 }
-function runChain(start, c0, maxTier) {
-  const steps = []; let cur = start, c = c0; const cap = maxTier === undefined ? 99 : maxTier;
-  for (let guard = 0; guard < 40; guard++) {
-    const blob = S.sock[cur]; if (!blob) break;
-    const t = blob.tier;
-    if (t >= 11) break;                                             // auto-fusion never creates tC: only a manual tB + tB does
-    if (t + 1 > cap) break;                                         // merge.d chains stop at this run's top tier: crown merges are the player's
-    const p = partnerOf(cur, t); if (p < 0) break;
-    const partner = S.sock[p];
-    S.sock[cur] = null; partner.tier = t + 1;
-    const bonus = 1.5 * Math.pow(3, t) * (1 + 0.5 * (c - 1)) * S.tot.mult;   // 1.5 * 3^(t'-1) * (1 + 0.5 (c-1)), t' = result tier
-    gain(bonus);
-    steps.push({ from: cur, to: p, tier: t + 1, c, bonus, newTier: noteTier(t + 1) });
-    cur = p; c++;
+function pinned(b) {
+  const d = Math.hypot(b.x - G.cx, b.y - G.cy);
+  return d + b.r >= G.Rc - 0.4 || (d - b.r <= G.keep + 0.4 && !(b.held && D.over));
+}
+function collide(a, b) {
+  let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+  const same = a.tier === b.tier, min = a.r + b.r + 0.1 + (S.preSettle && same ? 6 : 0);
+  if (d >= min) return;
+  if (d < 1e-4) { dx = Math.cos(a.id * 2.399); dy = Math.sin(a.id * 2.399); d = 1; }
+  const nx = dx / d, ny = dy / d, pen = min - d;
+  const pa = pinned(a), pb = pinned(b);                              // a blob already pressed against the wall or the core cannot be shoved further: the other one yields
+  const ia = pa && !pb ? 1e-9 : 1 / (massOf(a) * (a.held ? PH.heldMass : 1)), ib = pb && !pa ? 1e-9 : 1 / (massOf(b) * (b.held ? PH.heldMass : 1)), wa = ia / (ia + ib), wb = 1 - wa;
+  a.x -= nx * pen * wa; a.y -= ny * pen * wa; b.x += nx * pen * wb; b.y += ny * pen * wb;   // overlap is resolved fully, every pass
+  const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+  if (vn < 0) {
+    const sp = -vn, waiting = same && (a.hide > 0 || b.hide > 0);          // a twin that is still melting is touched inelastically so it stays in reach for the chain
+    const e = waiting || sp < PH.rest * G.Ks ? 0 : PH.eBlob;                // no bounce at rest: no jitter, no tick spam
+    const j = -(1 + e) * vn / (ia + ib);
+    a.vx -= j * ia * nx; a.vy -= j * ia * ny; b.vx += j * ib * nx; b.vy += j * ib * ny;
+    if (sp >= PH.rest * G.Ks && !waiting) impact(a, b, sp, nx, ny, null);
   }
-  return steps;
+}
+function wallPass(b) {
+  const dx = b.x - G.cx, dy = b.y - G.cy, d = Math.hypot(dx, dy) || 1e-6, lim = G.Rc - b.r;
+  if (d <= lim) return;
+  const nx = dx / d, ny = dy / d; b.x = G.cx + nx * lim; b.y = G.cy + ny * lim;
+  const vn = b.vx * nx + b.vy * ny;
+  if (vn > 0) { const e = vn < PH.rest * G.Ks ? 0 : PH.eWall; b.vx -= (1 + e) * vn * nx; b.vy -= (1 + e) * vn * ny; if (vn >= PH.rest * G.Ks) impact(b, null, vn, nx, ny, 'wall'); }
+}
+function keepPass(b) {
+  if (b.held && D.over) return;                                       // a blob being dragged into the core may enter it (vent)
+  const dx = b.x - G.cx, dy = b.y - G.cy; let d = Math.hypot(dx, dy);
+  const lim = G.keep + b.r; if (d >= lim) return;
+  let nx = 1, ny = 0; if (d > 1e-4) { nx = dx / d; ny = dy / d; } else d = 0;
+  const pen = lim - d, cap = 1.2 * G.Ks;                              // capped, so a blob released on the core slides out instead of teleporting
+  b.x += nx * Math.min(pen, cap); b.y += ny * Math.min(pen, cap);
+  const vn = b.vx * nx + b.vy * ny;
+  if (vn < 0) { const e = -vn < PH.rest * G.Ks ? 0 : PH.eCore; b.vx -= (1 + e) * vn * nx; b.vy -= (1 + e) * vn * ny; if (-vn >= PH.rest * G.Ks) impact(b, null, -vn, nx, ny, 'core'); }
+  if (pen > 4 * G.Ks && vn < 140 * G.Ks) { const add = 140 * G.Ks - vn; b.vx += nx * add; b.vy += ny * add; }
 }
 
-// ---------- view: chains, landings, merges ----------
-function chainFx(st, last, count, ctx, total) {
-  const p = G.pos[st.to];
-  if (ctx.auto) {
-    if (ctx.whisper) { Snd.whisper(); sparks(p.x, p.y, 4, PALS[S.look.pal][Math.min(st.tier, 12)], 40); }
-  } else {
-    Snd.chain(ctx.base, st.idx);
-    sparks(p.x, p.y, Math.min(8, 3 + st.c), PALS[S.look.pal][Math.min(st.tier, 12)], 70);
-    if (st.c >= 2) floater('chain', 'CHAIN ×' + st.c, G.cx, G.cy - G.coreR * 2.7, Math.min(40, Math.round((20 + 2 * (st.c - 1)) * Math.max(1, G.k * 0.85))), 'white');
-    if (st.c >= 6) hitstop(0.08);
-  }
-  if (st.newTier) newTierFx(st.tier);
-  if (last) {
-    if (total > 0) floater(ctx.auto ? 'bonusA' : 'bonus', '', p.x, p.y - rOf(st.tier) - 10, 18, 'ui', { add: total, fmt: (v) => '+' + fmt(v) });
-    if (count >= 2 && !ctx.auto) flash(0.16);                       // one flash at the end of the chain (flash limiter applies)
-  }
+function fuseCheck(a, b) {                                            // 'ok' | 'melt' | 'locked' | 'daemon'
+  if (a.hide > 0 || b.hide > 0) return 'melt';
+  const t = a.tier, manual = a.held || b.held || a.man > S.simT || b.man > S.simT;
+  if (t >= 12) return 'locked';
+  if (t === 11 && !manual) return 'locked';                           // tB + tB never fuses by bumping: only a manual drag (or M) makes C
+  if (!manual && (a.dmn > S.simT || b.dmn > S.simT) && t + 1 > S.top) return 'daemon';   // daemons never make this run's new top tier
+  return 'ok';
 }
-function viewChain(T, steps, d0, ctx) {
-  const total = steps.reduce((s, x) => s + x.bonus, 0); let d = d0;
-  ctx.base = steps.length ? Snd.hz(steps[0].tier) : 0;          // the ladder starts on the first step's pitch and rises one semitone per step
-  steps.forEach((st, idx) => {
-    st.idx = idx; const last = idx === steps.length - 1;
-    T.at(d, () => {
-      const a = V.sock[st.from]; V.sock[st.from] = null;
-      const from = G.pos[st.from], to = G.pos[st.to];
-      const arrive = () => { const tg = V.sock[st.to]; if (tg) { tg.vt = st.tier; if (!reduce) tg.pop = 1; else { tg.alpha = 0.4; tg.fadeIn = true; } } chainFx(st, last, steps.length, ctx, total); };
-      if (!a) { arrive(); return; }
-      if (reduce || ctx.instant) { arrive(); V.flights.push({ vb: a, x0: from.x, y0: from.y, x1: from.x, y1: from.y, t: 0, dur: 0.16, fade: true }); }   // chains cross-fade
-      else V.flights.push({ vb: a, x0: from.x, y0: from.y, x1: to.x, y1: to.y, t: 0, dur: 0.14, ease: easeInOut, onDone: arrive });
-    });
-    d += 0.167;
-  });
+function fuseScan() {
+  const B = S.blobs, n0 = B.length; let did = false;
+  for (let i = 0; i < n0; i++) {
+    const a = B[i]; if (a.dead) continue;
+    for (let j = i + 1; j < n0; j++) {
+      const b = B[j]; if (b.dead || a.tier !== b.tier) continue;
+      const d = Math.hypot(b.x - a.x, b.y - a.y), reach = a.r + b.r;
+      if (d > reach + 1.5) continue;
+      const res = fuseCheck(a, b);
+      if (res === 'ok') { if (d <= reach + 0.5 && !S.preSettle) { fuseBlobs(a, b); did = true; break; } }
+      else if (res === 'locked') { a.shim = b.shim = 0.14; a.shimA = Math.atan2(b.y - a.y, b.x - a.x); b.shimA = a.shimA + Math.PI; lockedHint(a, b); }
+      else if (res === 'daemon' && d <= reach + 0.5) daemonHint(a, b);
+    }
+  }
+  if (did) S.blobs = S.blobs.filter((q) => !q.dead);
+}
+function lockedHint(a, b) {
+  const now = performance.now(); if (S.quiet || now - S.lockHintT < 4000) return;
+  S.lockHintT = now; const x = (a.x + b.x) / 2, y = (a.y + b.y) / 2;
+  Snd.lock(); floater('near', a.tier >= 12 ? 'tC is the top' : 'drag it to crown', x, y - a.r - 8, 17, 'dim', { life: 1.4 });
+}
+function daemonHint(a, b) {
+  const now = performance.now(); if (S.quiet || now - S.lockHintT < 4000) return;
+  S.lockHintT = now; floater('near', 'new tier is yours', (a.x + b.x) / 2, (a.y + b.y) / 2 - a.r - 8, 17, 'dim', { life: 1.4 });
+}
+
+// ---------- fuse + chains ----------
+const chainOf = (b) => (b.cid ? S.chains.find((c) => c.id === b.cid && S.simT - c.last <= 0.6) || null : null);
+function fuseBlobs(a, b) {
+  const t = a.tier + 1, manual = !!(a.held || b.held || a.man > S.simT || b.man > S.simT);
+  const auto = !manual && (a.dmn > S.simT || b.dmn > S.simT);
+  const ma = massOf(a), mb = massOf(b), M = ma + mb;
+  const x = (a.x * ma + b.x * mb) / M, y = (a.y * ma + b.y * mb) / M;                 // mass-weighted midpoint
+  let vx = (a.vx * ma + b.vx * mb) / M, vy = (a.vy * ma + b.vy * mb) / M;            // momentum is conserved
+  const isNew = noteTier(t);
+  const cA = chainOf(a), cB = chainOf(b); let ch = cA && cB ? (cA.c >= cB.c ? cA : cB) : (cA || cB);
+  if (ch) ch.c++; else { ch = { id: S.nextChain++, c: 1, steps: 0, total: 0, last: S.simT, manual: false, auto: true, base: Snd.hz(t) }; S.chains.push(ch); }
+  const bonus = 1.5 * Math.pow(3, t - 1) * (1 + 0.5 * (ch.c - 1)) * S.tot.mult; gain(bonus);
+  ch.total += bonus; ch.steps++; ch.last = S.simT; ch.manual = ch.manual || manual; ch.auto = ch.auto && auto; S.chainMax = Math.max(S.chainMax, ch.c);
+  // small pop impulse: toward the next twin of the new tier when one is near, otherwise outward, so a chain can carry on
+  let twin = null, td = 1e9;
+  for (const q of S.blobs) if (q !== a && q !== b && !q.dead && q.tier === t && q.hide <= 0) { const d = Math.hypot(q.x - x, q.y - y); if (d < td) { td = d; twin = q; } }
+  let ux = x - G.cx, uy = y - G.cy; const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
+  const jt = (rng() - 0.5) * 1.0, cj = Math.cos(jt), sj = Math.sin(jt), rt = rOf(t);
+  let dx = ux * cj - uy * sj, dy = ux * sj + uy * cj, pv = PH.pop * G.Ks;
+  if (twin && td < 340 * G.Ks) {
+    const tx = (twin.x - x) / td, ty = (twin.y - y) / td, gap = td - rt - twin.r;
+    if (gap < 130 * G.Ks) {                                           // a twin is near: the pop is aimed at it (a little off), with just enough speed to arrive inside the 0.6 s chain window
+      const c2 = Math.cos(jt * 0.3), s2 = Math.sin(jt * 0.3);
+      dx = tx * c2 - ty * s2; dy = tx * s2 + ty * c2;
+      pv = clamp(PH.damp * Math.max(gap, 0) / (1 - Math.exp(-PH.damp * 0.5)) * 1.1 + 40 * G.Ks, pv, 360 * G.Ks);
+    } else { dx = 0.7 * tx + 0.3 * dx; dy = 0.7 * ty + 0.3 * dy; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl; }
+  }
+  if (auto) pv *= 0.6;
+  vx += dx * pv; vy += dy * pv;
+  for (const q of S.blobs) {                                         // the pop shoves close neighbours a little
+    if (q === a || q === b || q.dead || q.held) continue;
+    const qx = q.x - x, qy = q.y - y, qd = Math.hypot(qx, qy) || 1, reach = rt + q.r + 40 * G.Ks;
+    if (qd < reach) { const f = (1 - qd / reach) * 45 * G.Ks * (auto ? 0.5 : 1); q.vx += qx / qd * f; q.vy += qy / qd * f; }
+  }
+  const surv = a.held ? a : b;
+  const p = mkBlob(t, x, y, vx, vy, surv.per, surv.t0, surv.seed);
+  p.cid = ch.id; p.dmn = auto ? S.simT + 3 : 0; p.man = Math.max(a.man, b.man); p.held = a.held || b.held; if (p.held) p.dmn = 0;
+  if (D.active && (D.b === a || D.b === b)) D.b = p;                  // the hand keeps hold of the merged blob: manual merges can climb the ladder
+  if (S.sel === a.id || S.sel === b.id) S.sel = p.id;
+  for (const mg of S.magnets) { if (mg.a === a.id || mg.a === b.id || mg.b === a.id || mg.b === b.id) mg.until = 0; }
+  a.dead = b.dead = true; S.blobs.push(p); S.merges++; S.fuses++;
+  const wh = auto ? whisperOk('m') : true, anim = !auto || wh;       // merge.d: at most 4 animated fuses per second, the rest simply snap
+  p.fx = { t, c: ch.c, bonus, auto, wh, isNew, manual };
+  if (anim) { p.hide = MELT; V.melts.push({ pid: p.id, ax: a.x, ay: a.y, bx: b.x, by: b.y, px: x, py: y, tier: a.tier, per: a.per, t0: a.t0, t: 0, dur: MELT }); while (V.melts.length > 8) V.melts.shift(); }
+  if (!auto) {
+    if (ch.c === 1) Snd.merge(t); else Snd.chain(ch.base, ch.c - 1);              // each chain step is one semitone higher
+    if (ch.c >= 2) floater('chain', 'CHAIN ×' + ch.c, G.cx, topY(), Math.min(40, Math.round((20 + 2 * (ch.c - 1)) * Math.max(1, G.k * 0.85))), 'white');
+    if (ch.c >= 6) hitstop(0.08);
+    log('fuse t' + DIG[t - 1] + ' + t' + DIG[t - 1] + ' → t' + DIG[t] + (ch.c > 1 ? ' · chain ×' + ch.c : ''));
+  } else {
+    S.mdN = (S.mdN || 0) + 1; S.mdBest = Math.max(S.mdBest || 0, t);
+    if (wh) { Snd.whisper(); V.arcs.push({ age: 0, life: 0.3, a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y } }); }
+  }
+  if (!anim) meltDone(p);
+}
+function meltDone(p) {                                                // the melt is over: pop, ring wave, sparks, bonus, reveal
+  const f = p.fx; if (!f) return; p.fx = null;
+  const r = rOf(p.tier), col = PALS[S.look.pal][Math.min(p.tier, 12)];
+  if (!reduce) p.pop = 1; else { p.alpha = 0.4; p.fadeIn = true; }
+  if (f.auto) { if (f.wh) sparks(p.x, p.y, 4, col, 40); }
+  else {
+    ringFx(p.x, p.y, r, r * 3, 0.6, col); sparks(p.x, p.y, 6 + p.tier, col, 100);
+    floater('merge', '', p.x, p.y - r - 12, 18, 'ui', { add: f.bonus, fmt: (v) => '+' + fmt(v) });
+    if (p.tier >= 6) { hitstop(0.04 + 0.005 * Math.min(6, p.tier - 5)); shake(Math.min(4, 2 + (p.tier - 6) * 0.5)); }
+    announce('Merged into tier ' + DIG[p.tier] + ' ' + NAMES[p.tier] + '.');
+  }
+  if (f.isNew) newTierFx(p.tier);
+}
+function endChain(ch) {                                               // a chain ends when 0.6 s pass with no further fuse of its product
+  if (ch.steps >= 2 && !ch.auto) {
+    flash(0.16);                                                      // one flash at the end of the chain (flash limiter applies)
+    announce('Chain ×' + ch.c + ', plus ' + fmt(ch.total) + ' lux.', 2);
+  }
 }
 function newTierFx(tier) {
   const label = 'NEW TIER · ' + DIG[tier] + ' ' + NAMES[tier];
-  floater('tier', label, G.cx, G.cy + G.coreR * 2.2, Math.round(26 * Math.max(1, G.k * 0.8)), 'white', { life: 2.2 });
+  floater('tier', label, G.cx, botY(), Math.round(26 * Math.max(1, G.k * 0.8)), 'white', { life: 2.2 });
   if (!reduce) S.slow = 0.3;
   Snd.tier(tier); announce(label, 3); log(label.toLowerCase());          // slow-mo + banner + aria-live are its beat (no flash: the ladder flashes only at a chain's end)
 }
 
-function placeBlob(tier, opt) {
-  const g = ghostFor(tier);
-  if (g.i < 0) { spill(tier, opt); return false; }
-  const b = newBlob(tier); S.sock[g.i] = b;
-  const isNew = noteTier(tier);
-  const steps = runChain(g.i, 1);
-  const T = tx(!opt.auto), FLY = opt.auto ? 0.14 : 0.2, i = g.i;
-  T.at(0, () => {
-    const vb = mkvb(b, tier); vb.grow = 0; vb.flying = true; V.sock[i] = vb;
-    V.flights.push({ vb, x0: G.cx, y0: G.cy, x1: G.pos[i].x, y1: G.pos[i].y, t: 0, dur: FLY, ease: easeOut, onDone: () => { vb.flying = false; } });
-    if (opt.auto && whisperOk()) sparks(G.cx, G.cy, 2, PALS[S.look.pal][1], 60);
-  });
-  if (isNew) T.at(FLY, () => newTierFx(tier));
-  viewChain(T, steps, FLY, { auto: !!opt.auto, whisper: !!opt.auto && steps.length > 0 && whisperOk(), instant: !!opt.auto && S.whisper.length >= 4 });
-  return true;
+// ---------- the physics step ----------
+function physStep() {
+  const dt = DT; S.simT += dt;
+  const B = S.blobs; let vm = 0, rmin = 1e9;
+  for (const b of B) {
+    if (b.hide > 0) { b.hide -= dt; if (b.hide <= 0) { b.hide = 0; meltDone(b); } }
+    b.r = physR(b);
+    if (b.sq > 0) b.sq = Math.max(0, b.sq - dt / PH.sqDur);
+    if (b.pop > 0) b.pop = Math.max(0, b.pop - dt / 0.25);
+    if (b.grow < 1) b.grow = Math.min(1, b.grow + dt / 0.16);
+    if (b.rim > 0) b.rim = Math.max(0, b.rim - dt / 0.4);
+    if (b.shim > 0) b.shim = Math.max(0, b.shim - dt);
+    if (b.fadeIn) { b.alpha = Math.min(1, b.alpha + dt / 0.16); if (b.alpha >= 1) b.fadeIn = false; }
+    const sp = Math.hypot(b.vx, b.vy); if (sp > vm) vm = sp; if (b.r < rmin) rmin = b.r;
+  }
+  const m = clamp(Math.ceil(vm * dt / (0.6 * Math.max(4, rmin))), 1, 4), h = dt / m;     // fast bodies move less than ~0.6 radius per sub-step: no tunnelling
+  for (let s = 0; s < m; s++) subStep(h);
+  for (let i = S.chains.length - 1; i >= 0; i--) { const ch = S.chains[i]; if (S.simT - ch.last > 0.6) { S.chains.splice(i, 1); endChain(ch); } }
+  if (D.active && D.b && !S.blobs.includes(D.b)) { const nb = S.blobs.find((q) => q.held); if (nb) D.b = nb; }
+}
+function subStep(h) {
+  const B = S.blobs, Ks = G.Ks, t = S.simT, nz = (reduce ? 0.4 : 1) * PH.noise * Ks;
+  for (const b of B) {
+    if (b.held && D.active && D.b === b) {                            // a short spring to the pointer: weighty, not glued
+      let ax = PH.spring * (D.x - b.x) - PH.springC * b.vx, ay = PH.spring * (D.y - b.y) - PH.springC * b.vy;
+      const am = Math.hypot(ax, ay), cap = 16000 * Ks; if (am > cap) { ax *= cap / am; ay *= cap / am; }
+      b.vx += ax * h; b.vy += ay * h;
+    } else {
+      const dx = b.x - G.cx, dy = b.y - G.cy, d = Math.hypot(dx, dy) || 1e-6, dev = d - G.Rh, ex = Math.max(0, Math.abs(dev) - G.band), a = -PH.well * (dev < 0 ? -ex : ex) / d;   // gentle pull toward a home BAND around the core: no pull inside it, so blobs do not line up on a thin ring
+      const s = b.seed;
+      b.vx += (dx * a + nz * Math.sin(t * 0.37 + s * 1.7 + 0.8 * Math.sin(t * 0.11 + s))) * h;     // a slow noise current keeps the field alive, never busy
+      b.vy += (dy * a + nz * Math.cos(t * 0.29 + s * 2.3 + 0.7 * Math.sin(t * 0.13 + s * 1.3))) * h;
+      const f = Math.exp(-PH.damp * h); b.vx *= f; b.vy *= f;
+    }
+  }
+  for (let i = S.magnets.length - 1; i >= 0; i--) {                    // merge.d: a magnet pulls its pair together until they bump
+    const mg = S.magnets[i], a = byId(mg.a), b = byId(mg.b);
+    if (!a || !b || a.tier !== b.tier || t > mg.until || a.held || b.held || a.hide > 0 || b.hide > 0) { S.magnets.splice(i, 1); continue; }
+    const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, f = (mg.player ? 170 : 300) * Ks * h;
+    a.vx += dx / d * f; a.vy += dy / d * f; b.vx -= dx / d * f; b.vy -= dy / d * f;
+    if (mg.player) a.man = b.man = Math.max(a.man, t + 0.5); else a.dmn = b.dmn = t + 3;
+  }
+  for (const b of B) {
+    const sp = Math.hypot(b.vx, b.vy); if (sp > PH.vmax) { b.vx *= PH.vmax / sp; b.vy *= PH.vmax / sp; }
+    b.x += b.vx * h; b.y += b.vy * h;
+  }
+  fuseScan();
+  const A = S.blobs;
+  for (let pass = 0; pass < 6; pass++) {
+    for (const b of A) { keepPass(b); wallPass(b); }
+    for (let i = 0; i < A.length; i++) for (let j = i + 1; j < A.length; j++) collide(A[i], A[j]);          // pairs last: blobs never visibly overlap
+  }
+}
+function runPhysics(vdt) {                                            // the frame loop feeds wall-clock time; tests feed stepPhysics() instead
+  S.acc += vdt; let n = 0;
+  while (S.acc >= DT && n < 30) { physStep(); S.acc -= DT; n++; }
+  if (n >= 30) S.acc = 0;
 }
 
+// ---------- launching pulses ----------
+function launchPulse(tier, opt) {
+  if (S.blobs.length >= S.cap) { spill(tier, opt); return false; }
+  const Ks = G.Ks, r = rOf(tier);
+  let twin = null, td = 1e9;                                           // aim at the NEAREST same-tier blob, otherwise any direction
+  for (const q of S.blobs) if (q.tier === tier && q.hide <= 0) { const d = Math.hypot(q.x - G.cx, q.y - G.cy); if (d < td) { td = d; twin = q; } }
+  const jit = (rng() * 2 - 1) * PH.aimDeg * Math.PI / 180, sp = (280 + 100 * rng()) * Ks, rnd = rng() * TAU;
+  let ang = twin ? Math.atan2(twin.y - G.cy, twin.x - G.cx) + jit : rnd;
+  const rr = G.keep + r + 1.5; let px = G.cx + Math.cos(ang) * rr, py = G.cy + Math.sin(ang) * rr;
+  const free = (x, y) => S.blobs.every((q) => Math.hypot(q.x - x, q.y - y) >= q.r + r + 1);
+  if (!free(px, py)) {                                                // slide round the core rim to the nearest free spot
+    const a0 = ang;
+    for (let i = 1; i <= 24; i++) {
+      const a2 = a0 + ((i & 1) ? 1 : -1) * Math.ceil(i / 2) * 0.26, x = G.cx + Math.cos(a2) * rr, y = G.cy + Math.sin(a2) * rr;
+      if (free(x, y)) { px = x; py = y; ang = twin ? Math.atan2(twin.y - y, twin.x - x) + jit : a2; break; }
+    }
+  }
+  const b = newBlob(tier, px, py, Math.cos(ang) * sp, Math.sin(ang) * sp);
+  b.grow = 0; b.dmn = opt.auto ? S.simT + 3 : 0;
+  if (!reduce) { b.sq = 1; b.sqm = 0.8; b.sqa = ang + Math.PI / 2; }                // a short stretch along the flight direction as it leaves the core
+  S.blobs.push(b);
+  if (noteTier(tier)) newTierFx(tier);
+  if (opt.auto && whisperOk()) sparks(G.cx, G.cy, 2, PALS[S.look.pal][1], 60);
+  return true;
+}
 function spill(tier, opt) {
   const amt = 4 * prod(tier); gain(amt); S.spills++;
   if (!S.fullShown) { S.fullShown = true; V.outlineFlash = 1; }     // the very first spill flashes the outline once; after that it stays steady
   if (opt.auto) { if (whisperOk()) sparks(G.cx, G.cy, 2, PALS[S.look.pal][1], 50); return; }
-  floater('spill', '', G.cx, G.cy - G.coreR * 1.8, 18, 'dim', { add: amt, fmt: (v) => '+' + fmt(v) + ' spill' });
+  floater('spill', '', G.cx, topY(), 18, 'dim', { add: amt, fmt: (v) => '+' + fmt(v) + ' spill' });
   const now = performance.now();
   if (!S.lastSpillArc || now - S.lastSpillArc > 220) { S.lastSpillArc = now; V.arcs.push({ age: 0, life: 0.45 }); Snd.spill(); }
-  const n = Math.min(2, 40 - sparkCount()); const r = $('ringbox').getBoundingClientRect();
+  const n = Math.min(2, 40 - sparkCount()); const r = $('chamber').getBoundingClientRect();
   for (let i = 0; i < n; i++) V.flies.push({ x0: r.left + G.cx, y0: r.top + G.cy, age: 0, life: 0.5 + i * 0.07, col: PALS[S.look.pal][Math.min(tier, 12)], j: i });
 }
-
 function manualPulse(ts) {
   V.sq = 1; Snd.pulse();
   const j = judgeCore(ts); let tier = 1;
   if (j.kind === 'resonant') tier++;
-  else if (j.kind === 'near') floater('near', nearText(j.off), G.cx, G.cy - G.coreR * 2.5, 17, 'dim', { life: 1.1 });
+  else if (j.kind === 'near') floater('near', nearText(j.off), G.cx, topY(), 17, 'dim', { life: 1.1 });
   if (S.tot.fork > 0 && rng() < S.tot.fork) tier++;
   S.pulses++;
   if (j.kind === 'resonant') {
     Snd.bell(tier); V.resFlash = 1;
-    floater('resonant', 'RESONANT', G.cx, G.cy - G.coreR * 2.5, Math.round(22 * Math.max(1, G.k * 0.8)), 'white');
+    floater('resonant', 'RESONANT', G.cx, topY(), Math.round(22 * Math.max(1, G.k * 0.8)), 'white');
     ringFx(G.cx, G.cy, G.coreR, G.coreR * 3.2, 0.7, PALS[S.look.pal][Math.min(tier, 12)]);
     sparks(G.cx, G.cy, 8, PALS[S.look.pal][Math.min(tier, 12)], 110);
     announce('Resonant pulse, tier ' + tier + '.');
   } else ringFx(G.cx, G.cy, G.coreR, G.coreR * 1.9, 0.28, [0.5, 1, 0.7]);
-  placeBlob(tier, { resonant: j.kind === 'resonant' });
+  launchPulse(tier, { resonant: j.kind === 'resonant' });
   return j;
 }
 function autoPulse() {
   let tier = 1; if (S.tot.fork > 0 && rng() < S.tot.fork) tier++;
-  placeBlob(tier, { auto: true });
+  launchPulse(tier, { auto: true });
 }
 
-// ---------- merge / vent / burst ----------
-function pickPair(auto) {
-  const n = S.n; const tMax = auto ? Math.min(S.top, 11) - 1 : 11;        // daemon never makes this run's new top tier
-  const order = []; for (let t = 1; t <= tMax; t++) order.push(t); if (!auto) order.reverse();
-  for (const t of order) {
-    const idx = []; for (let i = 0; i < n; i++) if (S.sock[i] && S.sock[i].tier === t) idx.push(i);
-    for (let x = 0; x < idx.length; x++) for (let y = x + 1; y < idx.length; y++) {
-      const i = idx[x], j = idx[y]; if (auto && circDist(i, j) < 2) continue;
-      const links = (b) => { const u = S.sock[(b + 1) % n], w = S.sock[(b - 1 + n) % n]; return ((u && u.tier === t + 1) ? 1 : 0) + ((w && w.tier === t + 1) ? 1 : 0); };
-      return links(j) >= links(i) ? { a: i, b: j, t } : { a: j, b: i, t };
-    }
-  }
-  return null;
+// ---------- pairs: M key, merge.d magnet ----------
+function pathBlocked(a, b) {                                          // does the straight line between two blobs run through the core's keep-out circle?
+  const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy || 1, t = clamp(((G.cx - a.x) * dx + (G.cy - a.y) * dy) / L2, 0, 1);
+  return Math.hypot(a.x + dx * t - G.cx, a.y + dy * t - G.cy) < G.keep + Math.max(a.r, b.r);
 }
-function doMerge(a, b, opt) {
-  const A = S.sock[a], B = S.sock[b]; if (!A || !B || a === b) return false;
-  if (A.tier !== B.tier) return false;
-  if (A.tier >= 12) return false;
-  const t = A.tier + 1, auto = !!opt.auto, preTop = S.top;
-  if (auto && t > preTop) return false;                              // merge.d never makes this run's new top tier
-  S.sock[a] = null; B.tier = t; S.merges++;
-  const isNew = noteTier(t);
-  const bonus = 1.5 * Math.pow(3, t - 1) * S.tot.mult; gain(bonus);
-  const steps = runChain(b, 2, auto ? preTop : undefined);          // ...and neither does any chain it starts
-  const T = tx(!auto), MELT = 0.167, pb = G.pos[b];
-  const wh = auto ? whisperOk('m') : true;                           // merge.d has its own whisper slot (max 4 animated per second); beyond it the merge just snaps
-  T.at(0, () => {
-    const va = V.sock[a]; V.sock[a] = null; const tg = V.sock[b]; const from = opt.from || G.pos[a];
-    const done = () => {
-      if (tg) { tg.vt = t; tg.melt = 0; if (!reduce) tg.pop = 1; }
-      const col = PALS[S.look.pal][Math.min(t, 12)];
-      if (auto) {
-        if (wh) { Snd.whisper(); sparks(pb.x, pb.y, 4, col, 40); V.arcs.push({ age: 0, life: 0.3, a: G.pos[a], b: pb }); }
-      } else {
-        Snd.merge(t); ringFx(pb.x, pb.y, rOf(t), rOf(t) * 3, 0.6, col); sparks(pb.x, pb.y, 6 + t, col, 100);
-        floater('merge', '', pb.x, pb.y - rOf(t) - 12, 18, 'ui', { add: bonus, fmt: (v) => '+' + fmt(v) });
-        if (t >= 6) { hitstop(0.04 + 0.005 * Math.min(6, t - 5)); shake(Math.min(4, 2 + (t - 6) * 0.5)); }
-        announce('Merged into tier ' + DIG[t] + ' ' + NAMES[t] + '.');
-      }
-      if (isNew) newTierFx(t);
-    };
-    const polar = !opt.from;                                         // keyboard / M / merge.d: the blob rolls along the ring, never through the core
-    if (va && tg && !auto) {
-      tg.melt = MELT + 0.02; va.melt = MELT + 0.02;
-      V.flights.push({ vb: va, x0: from.x, y0: from.y, x1: pb.x, y1: pb.y, t: 0, dur: MELT, ease: easeInOut, group: 1, polar, onDone: done });
-    } else { done(); if (va && wh) V.flights.push({ vb: va, x0: from.x, y0: from.y, x1: pb.x, y1: pb.y, t: 0, dur: 0.12, ease: easeOut, fade: true, polar }); }
-  });
-  viewChain(T, steps, MELT + 0.06, { auto, whisper: auto && wh && steps.length > 0, instant: auto && !wh });
-  if (!auto) log('merge t' + DIG[t - 1] + '+t' + DIG[t - 1] + ' → t' + DIG[t] + (steps.length ? ' · chain ×' + (steps.length + 1) : ''));
-  else { S.mdN = (S.mdN || 0) + 1; S.mdBest = Math.max(S.mdBest || 0, t); }   // daemon merges are aggregated into one log line every 10 s
+function closestPair(sel, auto) {
+  const tMax = auto ? Math.min(S.top, 11) - 1 : 11;                  // daemon: only pairs below the run's top tier
+  const L = S.blobs.filter((b) => b.hide <= 0 && !b.held && b.tier <= tMax && !(auto && S.magnets.some((m) => m.a === b.id || m.b === b.id)));
+  let best = null;
+  for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
+    const a = L[i], b = L[j]; if (a.tier !== b.tier) continue;
+    if (sel && a !== sel && b !== sel) continue;
+    const gap = Math.hypot(b.x - a.x, b.y - a.y) - a.r - b.r;
+    const blocked = pathBlocked(a, b) ? 1 : 0;
+    const better = !best || (auto ? (a.tier < best.a.tier || (a.tier === best.a.tier && gap < best.gap)) : (blocked < best.blocked || (blocked === best.blocked && (gap < best.gap - 1e-6 || (Math.abs(gap - best.gap) < 1e-6 && a.tier > best.a.tier)))));
+    if (better) best = { a, b, gap, blocked };
+  }
+  return best;
+}
+function flickTogether(a, b) {                                        // the player's nudge: counts as a manual merge for 2.5 s (tB + tB may make C)
+  const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, gap = Math.max(0, d - a.r - b.r);
+  const s = Math.min(700 * G.Ks, PH.damp * gap * 0.5 * 1.35 + 70 * G.Ks), ux = dx / d, uy = dy / d;
+  a.vx = ux * s; a.vy = uy * s; b.vx = -ux * s; b.vy = -uy * s; a.dmn = b.dmn = 0; a.man = b.man = S.simT + 2.5;
+  S.magnets = S.magnets.filter((m) => m.a !== a.id && m.a !== b.id && m.b !== a.id && m.b !== b.id);
+  S.magnets.push({ a: a.id, b: b.id, until: S.simT + 1.6, player: true });                  // a short, gentle pull after the flick: a pair on opposite sides slides round the core
+  Snd.throw(0.6); sparks(a.x, a.y, 2, [1, 1, 1], 50); sparks(b.x, b.y, 2, [1, 1, 1], 50);
   return true;
 }
-function manualMerge(a, b, opt) {
-  opt = opt || {};
-  const A = S.sock[a], B = S.sock[b];
-  if (!A || !B) return false;
-  flushView();
-  if (A.tier !== B.tier) { bounce(a, opt.from, 't' + DIG[A.tier] + ' != t' + DIG[B.tier]); return false; }
-  if (A.tier >= 12) { bounce(a, opt.from, 'tC is the top'); return false; }
-  return doMerge(a, b, opt);
+function startMagnet() {                                              // merge.d: pick the lowest-tier twin pair below the run's top tier and pull it together
+  const p = closestPair(null, true); if (!p) return;
+  S.magnets.push({ a: p.a.id, b: p.b.id, until: S.simT + 4 }); p.a.dmn = p.b.dmn = S.simT + 3;
+  S.mdLog = S.mdLog || 0;
 }
-function bounce(i, from, msg) {
-  const vb = V.sock[i]; const p = G.pos[i]; const f = from || p;
-  if (vb) { vb.dragging = false; vb.away = true; vb.flying = true; V.flights.push({ vb, x0: f.x, y0: f.y, x1: p.x, y1: p.y, t: 0, dur: 0.3, ease: backOut, onDone: () => { vb.flying = false; vb.away = false; } }); }
-  floater('near', msg, p.x, p.y - rOf(S.sock[i] ? S.sock[i].tier : 1) - 8, 17, 'dim', { life: 1.1 });
-  Snd.deny(); log(msg);
-}
+
+// ---------- vent / burst ----------
 const needsHold = (b) => b.tier === S.top || b.tier >= 8;
-function ventBlob(i, opt) {
-  opt = opt || {}; const b = S.sock[i]; if (!b) return false;
-  flushView();
-  const amt = 15 * prod(b.tier); gain(amt); S.sock[i] = null;
-  const vb = V.sock[i]; V.sock[i] = null; const from = opt.from || G.pos[i];
-  if (vb) { vb.dragging = false; V.flights.push({ vb, x0: from.x, y0: from.y, x1: G.cx, y1: G.cy, t: 0, dur: 0.26, ease: easeInOut, shrink: true, onDone: () => { V.sq = Math.max(V.sq, 0.8); sparks(G.cx, G.cy, 8, PALS[S.look.pal][Math.min(b.tier, 12)], 90); } }); }
-  Snd.vent(); floater('vent', 'vent t' + DIG[b.tier] + ' · +' + fmt(amt), G.cx, G.cy - G.coreR * 2.3, 19, 'ui', { life: 1.4 });
-  log('vent t' + DIG[b.tier] + ' @' + (i + 1) + ' · +' + fmt(amt) + ' lx');
+function ventBlob(b, opt) {
+  opt = opt || {}; if (!S.blobs.includes(b)) return false;
+  const amt = 15 * prod(b.tier); gain(amt);
+  S.blobs = S.blobs.filter((q) => q !== b); if (S.sel === b.id) S.sel = 0; if (D.active && D.b === b) D = idleD();
+  const from = opt.from || { x: b.x, y: b.y };
+  V.vents.push({ tier: b.tier, per: b.per, t0: b.t0, x0: from.x, y0: from.y, t: 0, dur: 0.26 });
+  Snd.vent(); floater('vent', 'vent t' + DIG[b.tier] + ' · +' + fmt(amt), G.cx, topY(), 19, 'ui', { life: 1.4 });
+  log('vent t' + DIG[b.tier] + ' · +' + fmt(amt) + ' lx');
   return true;
 }
 function ventPreview(b) { return 'vent t' + DIG[b.tier] + ' · +' + fmt(15 * prod(b.tier)); }
-function burstBlob(i, tsRaw) {
-  const b = S.sock[i]; if (!b) return;
-  const p = G.pos[i], r = rOf(b.tier);
-  flushView();
-  if (b.rest > 0) { floater('near', 'resting ' + Math.ceil(b.rest) + ' s', p.x, p.y - r - 8, 16, 'dim', { life: 0.9 }); return; }
+function burstBlob(b, tsRaw) {
+  if (!b || !S.blobs.includes(b)) return;
+  b.dmn = 0;                                                          // touched by the player
+  const r = rOf(b.tier);
+  if (b.rest > 0) { floater('near', 'resting ' + Math.ceil(b.rest) + ' s', b.x, b.y - r - 8, 16, 'dim', { life: 0.9 }); return; }
   if (b.lock > 0) return;                                            // a missed burst locks that blob for 1 s: no mash-bursting (a dim tick shows it)
   const x = (tsRaw - S.look.calib - b.t0) / b.per, k = Math.round(x), off = (x - k) * b.per, abs = Math.abs(off);
   if (abs <= WIN) {
-    const amt = 3 * prod(b.tier); gain(amt); b.rest = 8;
-    const vb = V.sock[i]; if (vb) vb.rim = 1;
-    Snd.bell(b.tier); sparks(p.x, p.y, 8, [1, 1, 1], 100);
-    floater('burst', '', p.x, p.y - r - 10, 19, 'white', { add: amt, fmt: (v) => 'burst +' + fmt(v) });
+    const amt = 3 * prod(b.tier); gain(amt); b.rest = 8; b.rim = 1;
+    Snd.bell(b.tier); sparks(b.x, b.y, 8, [1, 1, 1], 100);
+    floater('burst', '', b.x, b.y - r - 10, 19, 'white', { add: amt, fmt: (v) => 'burst +' + fmt(v) });
     log('burst t' + DIG[b.tier] + ' +' + fmt(amt) + ' lx');
   } else {
     b.lock = 1.0;
-    if (abs <= NEAR) floater('near', nearText(off), p.x, p.y - r - 8, 17, 'dim', { life: 1.1 });
+    if (abs <= NEAR) floater('near', nearText(off), b.x, b.y - r - 8, 17, 'dim', { life: 1.1 });
   }
 }
 
@@ -865,33 +987,28 @@ function catchGlitch() {
   return true;
 }
 
-// ---------- the simulation tick ----------
+// ---------- the simulation tick (economy, daemons, glitch; the physics world is stepped separately at 120 Hz) ----------
 function simulate(dt) {
   S.rate = prodRate();
   gain(S.rate * dt); Inc.tick(dt);
-  for (const b of S.sock) if (b) { if (b.rest > 0) b.rest = Math.max(0, b.rest - dt); if (b.lock > 0) b.lock = Math.max(0, b.lock - dt); }
+  for (const b of S.blobs) { if (b.rest > 0) b.rest = Math.max(0, b.rest - dt); if (b.lock > 0) b.lock = Math.max(0, b.lock - dt); }
   if (S.own.merge) { S.mdLog = (S.mdLog || 0) + dt; if (S.mdLog >= 10) { S.mdLog = 0; if (S.mdN) { log('merge.d ×' + S.mdN + ' · best t' + DIG[S.mdBest]); S.mdN = 0; S.mdBest = 0; } } }
   if (S.own.pulse) { S.pulseT -= dt; if (S.pulseT <= 0) { S.pulseT += pulseInterval(); if (S.pulseT < 0) S.pulseT = 0.05; autoPulse(); } }
-  if (S.own.merge) { S.mergeT -= dt; if (S.mergeT <= 0) { S.mergeT += 2.0; const p = pickPair(true); if (p && !(D.active && D.moved && (D.i === p.a || D.i === p.b))) doMerge(p.a, p.b, { auto: true }); } }
+  if (S.own.merge) { S.mergeT -= dt; if (S.mergeT <= 0) { S.mergeT += 2.0; startMagnet(); } }
   if (S.glitch) { S.glitch.age += dt; if (S.glitch.age >= S.glitch.life) { S.glitch = null; S.nextGlitch = 20 + rng() * 15; log('glitch faded · missed'); } }
   else { S.nextGlitch -= dt; if (S.nextGlitch <= 0) spawnGlitch(); }
-  S.ghostTier = 1 + (S.look.tell && windowOpen(performance.now()) ? 1 : 0);   // the ghost only reveals the +1 window when the 'window tell' option is on
-  S.ghost = ghostFor(S.ghostTier);
 }
 
-// ---------- view update ----------
+// ---------- view update (effects only) ----------
 function viewUpdate(vdt, rdt) {
   V.t += vdt;
-  while (V.ops.length && V.ops[0].at <= V.t) V.ops.shift().fn();
   V.sq = Math.max(0, V.sq - vdt / 0.08);
   V.outlineFlash = Math.max(0, V.outlineFlash - vdt / 0.8); V.resFlash = Math.max(0, V.resFlash - vdt / 0.35);
-  for (const vb of V.sock) if (vb) {
-    vb.pop = Math.max(0, vb.pop - vdt / 0.25); vb.grow = Math.min(1, vb.grow + vdt / 0.16); vb.melt = Math.max(0, vb.melt - vdt); vb.rim = Math.max(0, vb.rim - vdt / 0.4);
-    if (vb.fadeIn) { vb.alpha = Math.min(1, vb.alpha + vdt / 0.16); if (vb.alpha >= 1) vb.fadeIn = false; }
-  }
-  for (let i = V.flights.length - 1; i >= 0; i--) { const f = V.flights[i]; f.t += vdt; if (f.t >= f.dur) { V.flights.splice(i, 1); if (f.onDone) f.onDone(); } }
+  V.melts = V.melts.filter((m) => { const p = byId(m.pid); if (!p || p.hide <= 0) return false; m.px = p.x; m.py = p.y; m.k = 1 - p.hide / MELT; return true; });
+  for (let i = V.vents.length - 1; i >= 0; i--) { const v = V.vents[i]; v.t += vdt; if (v.t >= v.dur) { V.vents.splice(i, 1); V.sq = Math.max(V.sq, 0.8); sparks(G.cx, G.cy, 8, PALS[S.look.pal][Math.min(v.tier, 12)], 90); } }
   for (const r of V.rings) { r.r += r.speed * vdt; r.a = r.a0 * Math.max(0, 1 - (r.r - 0) / r.maxR * 0.9); }
   V.rings = V.rings.filter((r) => r.r < r.maxR && r.a > 0.01);
+  for (const w of V.wallHits) w.a -= vdt / 0.35; V.wallHits = V.wallHits.filter((w) => w.a > 0.02);
   for (const p of V.sparks) { p.age += vdt; p.x += p.vx * vdt; p.y += p.vy * vdt; const dmp = Math.pow(0.04, vdt); p.vx *= dmp; p.vy *= dmp; }
   V.sparks = V.sparks.filter((p) => p.age < p.life);
   for (const f of V.floaters) f.age += vdt; V.floaters = V.floaters.filter((f) => f.age < f.life);
@@ -908,49 +1025,43 @@ function viewUpdate(vdt, rdt) {
 }
 
 // ---------- draw list (shared by GL and the crisp overlay) ----------
-const popScale = (vb) => 1 + 0.25 * vb.pop * Math.cos((1 - vb.pop) * 9);
+const popScale = (b) => 1 + 0.25 * b.pop * Math.cos((1 - b.pop) * 9);
 // digits are sized by glyph height (VT323 digits are ~0.58 em tall, ~0.33 em wide); the tinted white-hot backing grows to cover the glyph box
 const digitSize = (r, sc) => Math.max(16 * clamp(sc === undefined ? 1 : sc, 0.5, 1), 1.15 * r);
 const hotRadius = (r, sc) => Math.min(0.8 * r, Math.max(0.4 * r, 0.336 * digitSize(r, sc) + 1.5));
-const haloReach = (r) => Math.max(r, Math.min(1.5 * r, G.hmax));      // spec clip: min(1.5 r, half-pitch - 2)
-const sparse = () => clamp((S.bloom - 0.25) / 0.28, 0, 1);              // 1 on a sparse ring, 0 on a full late ring (auto-exposure headroom)
-const haloStr = (tier) => (0.44 + 0.026 * Math.max(1, tier)) * (1 + 0.5 * sparse());   // higher tiers radiate more (0.47 .. 0.75); sparse rings spend their headroom on glow
-function entryOf(kind, vb, x, y, scale, alpha, group, now) {
-  const b = vb.b, tier = vb.vt, r = rOf(tier) * scale;
-  const bre = breath((now - b.t0) / b.per);                           // breathing drives the halo and the hot core only; the colour band stays constant
+const haloReach = (r) => 1.5 * r;                                     // halos may reach a touching neighbour: MAX compositing keeps the neighbour's body in front
+const sparse = () => clamp((S.bloom - 0.25) / 0.28, 0, 1);              // 1 on a sparse field, 0 on a full late field (auto-exposure headroom)
+const haloStr = (tier) => (0.44 + 0.026 * Math.max(1, tier)) * (1 + 0.5 * sparse());   // higher tiers radiate more (0.47 .. 0.75); sparse fields spend their headroom on glow
+function entryOf(kind, o, x, y, scale, alpha, group, now) {
+  const tier = o.tier, r = rOf(tier) * scale;
+  const bre = breath((now - o.t0) / o.per);                           // breathing drives the halo and the hot core only; the colour band stays constant
   const dg = clamp((scale - 0.55) / 0.35, 0, 1);
-  return { kind, x, y, r, sc: scale, br: alpha, ha: alpha, breath: bre, tier, alpha, col: PALS[S.look.pal][Math.min(tier, 12)], white: 1, hotR: hotRadius(r, scale), halo: group ? r * 2.1 : haloReach(r), haloS: haloStr(tier), group: group || 0, flag: tier === 12 ? 1 : 0, vb, digit: group ? 0 : alpha * dg };
+  return { kind, x, y, r, sc: scale, br: alpha, ha: alpha, breath: bre, tier, alpha, col: PALS[S.look.pal][Math.min(tier, 12)], white: 1, hotR: hotRadius(r, scale), halo: group ? r * 2.1 : haloReach(r), haloS: haloStr(tier), group: group || 0, flag: tier === 12 ? 1 : 0, b: null, gap: 99, sqv: null, digit: group ? 0 : alpha * dg };
 }
+function sqOf(b) { return reduce || b.sq <= 0 ? null : { a: b.sqa, amp: 0.12 * b.sqm * b.sq }; }   // squash <= 12 % along / across the contact normal, 110 ms
+function gapOf(b) { let g = 99; for (const q of S.blobs) if (q !== b && q.hide <= 0) g = Math.min(g, Math.hypot(q.x - b.x, q.y - b.y) - q.r - b.r); return g; }
 function buildList(now) {
-  const L = [], n = S.n;
+  const L = [];
   const cr = G.coreR * (1 + 0.16 * V.sq);
-  L.push({ kind: 'core', x: G.cx, y: G.cy, r: cr, sc: 1, br: 0.74 + 0.26 * breath(now / P_MS), ha: 1, breath: breath(now / P_MS), tier: 0, alpha: 1, col: [0.55, 1, 0.75], white: 1, hotR: 0.42 * cr, halo: cr * 2.1, haloS: 0.42, group: 0, flag: 2 });
-  if (S.ghost.i >= 0) {
-    const p = G.pos[S.ghost.i], t = S.ghostTier, r = rOf(t);
-    L.push({ kind: 'ghost', x: p.x, y: p.y, r, sc: 1, br: 0.3, ha: 0.3, breath: 0.5, tier: t, alpha: 1, col: PALS[S.look.pal][t], white: 0.5, hotR: hotRadius(r, 1), halo: haloReach(r), haloS: haloStr(t), group: 0, flag: 3, digit: 0.9 });
+  L.push({ kind: 'core', x: G.cx, y: G.cy, r: cr, sc: 1, br: 0.74 + 0.26 * breath(now / P_MS), ha: 1, breath: breath(now / P_MS), tier: 0, alpha: 1, col: [0.55, 1, 0.75], white: 1, hotR: 0.42 * cr, halo: cr * 2.1, haloS: 0.42, group: 0, flag: 2, gap: 99, sqv: null });
+  for (const b of S.blobs) {
+    if (b.hide > 0) continue;                                         // a fresh fuse is hidden while its two parents melt together
+    const sc = popScale(b) * (0.4 + 0.6 * easeOut(b.grow)) * (b.held ? 1.05 : 1);
+    const e = entryOf('blob', b, b.x, b.y, sc, b.alpha, 0, now); e.b = b; e.sqv = sqOf(b); e.gap = gapOf(b); L.push(e);
   }
-  for (let i = 0; i < n; i++) {
-    const vb = V.sock[i]; if (!vb || vb.dragging || vb.flying) continue;
-    const p = G.pos[i];
-    const e = entryOf('sock', vb, p.x, p.y, popScale(vb) * (0.4 + 0.6 * easeOut(vb.grow)), vb.alpha, vb.melt > 0 ? 1 : 0, now); e.i = i; L.push(e);
+  for (const m of V.melts) {                                          // the 167 ms melt: the ONLY time two fields blend
+    const k = easeInOut(m.k === undefined ? 0 : m.k), al = reduce ? 1 - k : 1, kk = reduce ? 0 : k;
+    L.push(entryOf('melt', m, lerp(m.ax, m.px, kk), lerp(m.ay, m.py, kk), 1, al, 1, now));
+    L.push(entryOf('melt', m, lerp(m.bx, m.px, kk), lerp(m.by, m.py, kk), 1, al, 1, now));
   }
-  for (const f of V.flights) {
-    const k = clamp(f.t / f.dur, 0, 1), q = f.ease ? f.ease(k) : k;
-    const sc = (f.shrink ? lerp(1, 0.3, k) : 1) * (0.4 + 0.6 * easeOut(f.vb.grow));
-    let fx = lerp(f.x0, f.x1, q), fy = lerp(f.y0, f.y1, q);
-    if (f.polar) {                                                  // interpolate along the ring arc (angle lerp, radius lerp) instead of the chord
-      const a0 = Math.atan2(f.y0 - G.cy, f.x0 - G.cx), a1 = Math.atan2(f.y1 - G.cy, f.x1 - G.cx), r0 = Math.hypot(f.x0 - G.cx, f.y0 - G.cy), r1 = Math.hypot(f.x1 - G.cx, f.y1 - G.cy);
-      let da = a1 - a0; while (da > Math.PI) da -= TAU; while (da < -Math.PI) da += TAU;
-      const an = a0 + da * q, rr = lerp(r0, r1, q); fx = G.cx + Math.cos(an) * rr; fy = G.cy + Math.sin(an) * rr;
-    }
-    const e = entryOf('fly', f.vb, fx, fy, sc, f.fade ? 1 - k : 1, f.group || 0, now);
-    if (f.shrink) e.digit = 1 - k; L.push(e);
+  for (const v of V.vents) {                                          // a vented blob shrinks into the core
+    const k = clamp(v.t / v.dur, 0, 1), q = easeInOut(k);
+    const e = entryOf('vent', v, lerp(v.x0, G.cx, q), lerp(v.y0, G.cy, q), lerp(1, 0.3, k), 1, 0, now); e.digit = 1 - k; L.push(e);
   }
-  if (D.active && D.moved && V.sock[D.i]) { const vb = V.sock[D.i]; const e = entryOf('drag', vb, D.x, D.y, 1, 1, 0, now); e.i = D.i; L.push(e); }
   return L;
 }
 
-// ---------- crisp overlay: sockets, digits, rings, timing ring, floaters ----------
+// ---------- crisp overlay: wall, pips, digits, rings, timing ring, floaters ----------
 const fontCache = new Map();
 const FONT = (px) => { const k = Math.round(px); let f = fontCache.get(k); if (!f) { f = k + 'px VT323, ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace'; fontCache.set(k, f); } return f; };
 const TONE = { white: '#FFFFFF', ui: '#7DFFA8', dim: '#9CD8B2', glitch: '#FF4FD8' };
@@ -959,41 +1070,32 @@ function drawDigit(c, e, now) {
   c.font = FONT(size); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
   c.globalAlpha = clamp(e.digit === undefined ? e.alpha : e.digit, 0, 1);
   const y = e.y + size * 0.05;
-  if (e.kind === 'ghost') {                                          // the ghost digit stays legible on its dim 30% disc: light ink, dark keyline, tier tint stays in the body
-    c.lineWidth = 2; c.strokeStyle = 'rgba(3,8,5,.8)'; c.strokeText(DIG[e.tier], e.x, y);
-    c.globalAlpha *= 0.85; c.fillStyle = '#E8FFF0'; c.fillText(DIG[e.tier], e.x, y); return;
-  }
   c.lineWidth = Math.max(1.4, size * 0.09); c.strokeStyle = 'rgba(255,255,255,.35)'; c.strokeText(DIG[e.tier], e.x, y);   // 1 px light knock-out keeps the ink crisp on the tinted backing
   c.fillStyle = INK; c.fillText(DIG[e.tier], e.x, y);
 }
-// orbit rings / KERNEL crown are LIGHT. They sit just outside the rim where the chord gap allows (gap >= 2 x span + 6 px),
-// otherwise they fall back to bright orbiting arcs hugging the rim.
+// orbit rings / KERNEL crown are LIGHT. They sit just outside the rim while the clearance to the nearest neighbour allows,
+// and fall back to bright orbiting arcs hugging the rim as blobs crowd in.
 const ringStep = () => 3.3 * clamp(G.k, 0.85, 1.3);
-function ringsOutside(tier) { const nr = clamp(tier - 8, 0, 3), span = 2.4 + ringStep() * nr; return (G.chord - 2 * rOf(tier)) >= 2 * span + 6; }
 function drawDeco(c, e, now) {
   const r = e.r, a = e.alpha, sc = ringStep() / 3.3;
-  if (e.kind !== 'ghost' && a > 0.02 && e.group === 0) {
+  if (e.kind === 'blob' && a > 0.02) {
     const nr = clamp(e.tier - 8, 0, 3), t = reduce ? 0 : now / 1000;
-    if (nr > 0) {
-      if (ringsOutside(e.tier)) {
-        c.lineWidth = Math.max(1.1, r * 0.04);
-        for (let j = 0; j < nr; j++) {
-          const rr = r + (2.4 + 3.3 * j) * sc + 1.5;
-          c.strokeStyle = '#FFFFFF'; c.globalAlpha = 0.6 * a; c.beginPath(); c.arc(e.x, e.y, rr, 0, TAU); c.stroke();
-          const an = t * (0.9 + 0.5 * j) * (j % 2 ? -1 : 1) + j * 2.1;
-          c.globalAlpha = a; c.fillStyle = '#FFFFFF'; c.beginPath(); c.arc(e.x + Math.cos(an) * rr, e.y + Math.sin(an) * rr, Math.max(1.7, r * 0.065), 0, TAU); c.fill();
-        }
-      } else {                                                      // tight ring (16 sockets): bright orbiting arcs on the rim
-        const rr = r + 2.2; c.lineWidth = 1.8;
-        for (let j = 0; j < nr; j++) {
-          const an = t * (0.9 + 0.5 * j) * (j % 2 ? -1 : 1) + j * TAU / nr;
-          c.strokeStyle = '#FFFFFF'; c.globalAlpha = 0.75 * a; c.beginPath(); c.arc(e.x, e.y, rr, an, an + 0.9); c.stroke();
-          c.globalAlpha = a; c.fillStyle = '#FFFFFF'; c.beginPath(); c.arc(e.x + Math.cos(an + 0.9) * rr, e.y + Math.sin(an + 0.9) * rr, 1.9, 0, TAU); c.fill();
-        }
+    for (let j = 0; j < nr; j++) {
+      const off = (2.4 + 3.3 * j) * sc + 1.5, cl = clamp((e.gap - off - 3) / 5, 0, 1);
+      const an = t * (0.9 + 0.5 * j) * (j % 2 ? -1 : 1) + j * 2.1;
+      if (cl > 0.02) {
+        const rr = r + off;
+        c.lineWidth = Math.max(1.1, r * 0.04); c.strokeStyle = '#FFFFFF'; c.globalAlpha = 0.6 * a * cl; c.beginPath(); c.arc(e.x, e.y, rr, 0, TAU); c.stroke();
+        c.globalAlpha = a * cl; c.fillStyle = '#FFFFFF'; c.beginPath(); c.arc(e.x + Math.cos(an) * rr, e.y + Math.sin(an) * rr, Math.max(1.7, r * 0.065), 0, TAU); c.fill();
+      }
+      if (cl < 0.98) {                                                // crowded: bright orbiting arcs on the rim
+        const rr = r + 2.2, an2 = t * (0.9 + 0.5 * j) * (j % 2 ? -1 : 1) + j * TAU / nr;
+        c.lineWidth = 1.8; c.strokeStyle = '#FFFFFF'; c.globalAlpha = 0.75 * a * (1 - cl); c.beginPath(); c.arc(e.x, e.y, rr, an2, an2 + 0.9); c.stroke();
+        c.globalAlpha = a * (1 - cl); c.fillStyle = '#FFFFFF'; c.beginPath(); c.arc(e.x + Math.cos(an2 + 0.9) * rr, e.y + Math.sin(an2 + 0.9) * rr, 1.9, 0, TAU); c.fill();
       }
     }
     if (e.tier === 12) {                                             // KERNEL crown: 16 light ticks across the rim (the glow rays are in the shader)
-      const out = clamp(0.24 * r, 0, (G.chord - 2 * r) / 2 - 1.5);
+      const out = clamp(0.24 * r, 0, Math.max(0, e.gap / 2 - 1.5));
       c.strokeStyle = '#FFF4D2'; c.lineWidth = Math.max(1.4, r * 0.06); c.globalAlpha = 0.9 * a;
       const rot = reduce ? 0 : now / 4000;
       for (let j = 0; j < 16; j++) { const an = rot + j * TAU / 16; c.beginPath(); c.moveTo(e.x + Math.cos(an) * (r - 2.5), e.y + Math.sin(an) * (r - 2.5)); c.lineTo(e.x + Math.cos(an) * (r + out), e.y + Math.sin(an) * (r + out)); c.stroke(); }
@@ -1003,41 +1105,30 @@ function drawDeco(c, e, now) {
   c.globalAlpha = 1;
 }
 function drawOverlay(L, now) {
-  const c = octx, d = S.dpr, n = S.n, k = G.k;
+  const c = octx, d = S.dpr, k = G.k;
   c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, G.Z, G.Z); c.globalAlpha = 1; c.lineCap = 'round'; c.setLineDash([]); c.shadowBlur = 0;
   if (!gl) {                                                         // 2D fallback when WebGL is unavailable
     for (const e of L) { const g = c.createRadialGradient(e.x, e.y, 0, e.x, e.y, Math.max(e.halo, e.r)); const col = rgbCss(e.col, Math.min(1, e.br)); g.addColorStop(0, '#fff'); g.addColorStop(Math.min(0.95, (e.r / Math.max(e.halo, e.r))), col); g.addColorStop(1, rgbCss(e.col, 0)); c.fillStyle = g; c.beginPath(); c.arc(e.x, e.y, Math.max(e.halo, e.r), 0, TAU); c.fill(); }
   }
-  // steady FULL outline (the first spill flashes it once, then it stays steady)
-  const fo = Math.max(S.fullA * 0.55, V.outlineFlash * 0.9);
-  if (fo > 0.02) {
-    c.strokeStyle = UI; c.lineWidth = 1.5; c.globalAlpha = fo; c.beginPath(); c.arc(G.cx, G.cy, G.R + 29 * k, 0, TAU); c.stroke();
-    if (!(D.active && D.moved)) { c.globalAlpha = S.fullA * 0.9; c.font = FONT(Math.max(16, 17 * k * 0.9)); c.fillStyle = UI_DIM; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('RING FULL', G.cx, G.cy + G.coreR * 1.8); }
-  }
-  // empty sockets: 2px dashed circle, >= 3:1 against the background
-  c.setLineDash([5, 4]); c.strokeStyle = '#3E8A5C'; c.lineWidth = 2;
-  for (let i = 0; i < n; i++) { const vb = V.sock[i]; if (vb && !vb.dragging && !vb.away) continue; c.globalAlpha = 1; c.beginPath(); c.arc(G.pos[i].x, G.pos[i].y, G.emptyR, 0, TAU); c.stroke(); }
-  c.setLineDash([]); c.globalAlpha = 1;
-  // socket numbers while the keyboard is in use
-  if (S.idxUntil > now) {
-    c.font = FONT(Math.max(13, 14 * k * 0.9)); c.textAlign = 'center'; c.textBaseline = 'middle';
-    for (let i = 0; i < n; i++) { const p = G.pos[i], rr = G.R - rOf(11) - 12 * k; const x = G.cx + (p.x - G.cx) * rr / G.R, y = G.cy + (p.y - G.cy) * rr / G.R; c.fillStyle = i < 12 ? UI_DIM : '#8A8A6A'; c.globalAlpha = 0.9; c.fillText(String(i + 1), x, y); }
-    c.globalAlpha = 1;
-  }
-  // selected socket
-  if (S.sel >= 0 && S.sel < n) { const p = G.pos[S.sel], b = S.sock[S.sel]; c.strokeStyle = UI; c.lineWidth = 2; c.beginPath(); c.arc(p.x, p.y, Math.max(G.emptyR, b ? rOf(b.tier) : 0) + 4 * k, 0, TAU); c.stroke(); }
-  // ghost link mark (the next blob will fuse)
-  const gh = S.ghost;
-  if (gh.i >= 0 && gh.fuse) {
-    const gp = G.pos[gh.i], rg = rOf(S.ghostTier);
-    for (const j of [(gh.i + 1) % n, (gh.i - 1 + n) % n]) {
-      const o = S.sock[j]; if (!o || o.tier !== S.ghostTier) continue;
-      const q = G.pos[j], dx = q.x - gp.x, dy = q.y - gp.y, dd = Math.hypot(dx, dy) || 1, ux = dx / dd, uy = dy / dd;
-      const x0 = gp.x + ux * (rg + 1.5), y0 = gp.y + uy * (rg + 1.5), x1 = q.x - ux * (rOf(o.tier) + 1.5), y1 = q.y - uy * (rOf(o.tier) + 1.5);
-      c.strokeStyle = UI; c.lineWidth = 2; c.globalAlpha = 0.9; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
-      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2; c.beginPath(); c.moveTo(mx - uy * 4, my + ux * 4); c.lineTo(mx + uy * 4, my - ux * 4); c.stroke();
-      break;
+  // the chamber wall: a faint phosphor circle (steady and a little brighter while FULL; the first spill flashes it once)
+  const fo = Math.max(S.fullA * 0.36, V.outlineFlash * 0.7);
+  c.strokeStyle = UI; c.lineWidth = 1.5; c.globalAlpha = clamp(0.26 + fo, 0, 1); c.beginPath(); c.arc(G.cx, G.cy, G.Rc, 0, TAU); c.stroke();
+  for (const w of V.wallHits) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 2.5; c.globalAlpha = clamp(w.a, 0, 1) * 0.7; c.beginPath(); c.arc(G.cx, G.cy, G.Rc, w.ang - 0.3, w.ang + 0.3); c.stroke(); }
+  c.globalAlpha = 1;
+  // buffer pips around the core's halo: lit = occupied
+  {
+    const N = S.cap, cnt = S.blobs.length, pr = Math.max(2.6, 2.9 * Math.min(1.3, k * 0.8));
+    for (let i = 0; i < N; i++) {
+      const an = -Math.PI / 2 + TAU * (i + 0.5) / N, x = G.cx + Math.cos(an) * G.pipR, y = G.cy + Math.sin(an) * G.pipR;
+      if (i < cnt) { c.fillStyle = cnt >= N ? '#E8FFF0' : UI; c.beginPath(); c.arc(x, y, pr, 0, TAU); c.fill(); }
+      else { c.strokeStyle = '#3E8A5C'; c.lineWidth = 1.5; c.beginPath(); c.arc(x, y, pr - 0.6, 0, TAU); c.stroke(); }
     }
+    if (S.fullA > 0.02 && !(D.active && D.moved)) { c.globalAlpha = S.fullA * 0.9; c.font = FONT(Math.max(16, 17 * k * 0.9)); c.fillStyle = UI_DIM; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('FULL', G.cx, G.cy + G.coreR * 1.75); c.globalAlpha = 1; }
+  }
+  // merge.d magnets: a faint 1 px trace between a pulled pair
+  if (S.magnets.length) {
+    c.strokeStyle = UI; c.lineWidth = 1; c.globalAlpha = 0.32;
+    for (const mg of S.magnets) { const a = byId(mg.a), b = byId(mg.b); if (!a || !b) continue; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); }
     c.globalAlpha = 1;
   }
   // waves, daemon traces, sparks
@@ -1046,26 +1137,30 @@ function drawOverlay(L, now) {
   for (const a of V.arcs) if (a.a) { c.strokeStyle = UI; c.lineWidth = 1; c.globalAlpha = 0.8 * (1 - a.age / a.life); c.beginPath(); c.moveTo(a.a.x, a.a.y); c.lineTo(a.b.x, a.b.y); c.stroke(); }
   for (const p of V.sparks) { c.fillStyle = rgbCss(p.col, 1); c.globalAlpha = clamp(1 - p.age / p.life, 0, 1); c.fillRect(p.x - 1.2, p.y - 1.2, 2.4, 2.4); }
   c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
-  // blobs: digits, orbit rings, corona crown; rest arcs, burst ticks
+  // blobs: digits, orbit rings, corona crown; rest arcs, burst ticks, locked shimmer, selection
   for (const e of L) {
     if (e.kind === 'core') continue;
     drawDeco(c, e, now);
-    if (e.kind === 'sock' || e.kind === 'drag') {
-      const b = e.vb.b, rr = Math.min(e.r + 3 * k, G.hmax - 0.5);
-      if (b.rest > 0) { c.strokeStyle = UI_DIM; c.lineWidth = 2; c.globalAlpha = 0.85; c.beginPath(); c.arc(e.x, e.y, rr, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - b.rest / 8)); c.stroke(); }
-      else if (b.lock > 0) { c.strokeStyle = UI_DIM; c.lineWidth = 1.6; c.globalAlpha = 0.35 + 0.45 * Math.min(1, b.lock); c.beginPath(); c.moveTo(e.x, e.y - e.r + 2); c.lineTo(e.x, e.y - e.r - 3); c.stroke(); }   // tiny dim tick: this blob ignores taps for 1 s after a missed burst
-      else {
-        const ph = ((now - b.t0) / b.per) % 1, q = ph < 0 ? ph + 1 : ph;     // 0 = peak
-        let show = 0; if (q > 0.72) show = (q - 0.72) / 0.28; else if (q < 0.07) show = 1 - q / 0.07;
-        if (show > 0.02) {
-          const ang = -Math.PI / 2 - (q > 0.5 ? (1 - q) : -q) * TAU * 1.1; const hot = S.look.tell && (q > 0.93 || q < 0.065);
-          c.strokeStyle = hot ? '#FFFFFF' : UI; c.lineWidth = hot ? 2.4 : 1.6; c.globalAlpha = 0.25 + 0.75 * show;
-          c.beginPath(); c.moveTo(e.x + Math.cos(ang) * (e.r - 3), e.y + Math.sin(ang) * (e.r - 3)); c.lineTo(e.x + Math.cos(ang) * (e.r + 2.5), e.y + Math.sin(ang) * (e.r + 2.5)); c.stroke();
-        }
-      }
-      if (e.vb.rim > 0) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 2; c.globalAlpha = e.vb.rim; c.beginPath(); c.arc(e.x, e.y, e.r + 1.5, 0, TAU); c.stroke(); }
-      c.globalAlpha = 1;
+    if (e.kind !== 'blob') continue;
+    const b = e.b, rr = e.r + 3 * k;
+    if (b.shim > 0) {                                                 // tB + tB (and tC + tC) bounce with a faint locked shimmer on the touching rims (steady under reduced motion)
+      c.strokeStyle = '#FFF4D2'; c.lineWidth = 1.6; c.globalAlpha = reduce ? 0.5 : 0.35 + 0.3 * Math.sin(now / 35); c.beginPath(); c.arc(e.x, e.y, e.r + 2, b.shimA - 0.55, b.shimA + 0.55); c.stroke();
     }
+    if (b.rest > 0) { c.strokeStyle = UI_DIM; c.lineWidth = 2; c.globalAlpha = 0.85; c.beginPath(); c.arc(e.x, e.y, rr, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - b.rest / 8)); c.stroke(); }
+    else if (b.lock > 0) { c.strokeStyle = UI_DIM; c.lineWidth = 1.6; c.globalAlpha = 0.35 + 0.45 * Math.min(1, b.lock); c.beginPath(); c.moveTo(e.x, e.y - e.r + 2); c.lineTo(e.x, e.y - e.r - 3); c.stroke(); }   // tiny dim tick: this blob ignores taps for 1 s after a missed burst
+    else if (!b.held) {
+      const ph = ((now - b.t0) / b.per) % 1, q = ph < 0 ? ph + 1 : ph;     // 0 = peak
+      let show = 0; if (q > 0.72) show = (q - 0.72) / 0.28; else if (q < 0.07) show = 1 - q / 0.07;
+      if (show > 0.02) {
+        const ang = -Math.PI / 2 - (q > 0.5 ? (1 - q) : -q) * TAU * 1.1; const hot = S.look.tell && (q > 0.93 || q < 0.065);
+        c.strokeStyle = hot ? '#FFFFFF' : UI; c.lineWidth = hot ? 2.4 : 1.6; c.globalAlpha = 0.25 + 0.75 * show;
+        c.beginPath(); c.moveTo(e.x + Math.cos(ang) * (e.r - 3), e.y + Math.sin(ang) * (e.r - 3)); c.lineTo(e.x + Math.cos(ang) * (e.r + 2.5), e.y + Math.sin(ang) * (e.r + 2.5)); c.stroke();
+      }
+    }
+    if (b.rim > 0) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 2; c.globalAlpha = b.rim; c.beginPath(); c.arc(e.x, e.y, e.r + 1.5, 0, TAU); c.stroke(); }
+    if (b.held) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 1.5; c.globalAlpha = 0.8; c.beginPath(); c.arc(e.x, e.y, e.r + 2.5, 0, TAU); c.stroke(); }
+    if (b.id === S.sel) { c.strokeStyle = UI; c.lineWidth = 2; c.globalAlpha = 1; c.setLineDash([6, 3]); c.beginPath(); c.arc(e.x, e.y, e.r + 6 * k, 0, TAU); c.stroke(); c.setLineDash([]); c.strokeStyle = '#FFFFFF'; c.lineWidth = 1; c.globalAlpha = 0.9; c.beginPath(); c.arc(e.x, e.y, e.r + 4 * k, 0, TAU); c.stroke(); }
+    c.globalAlpha = 1;
   }
   // timing ring: contracts onto the core rim and closes exactly at the peak (kept under reduced motion: it is information)
   {
@@ -1076,29 +1171,32 @@ function drawOverlay(L, now) {
     if (spent) al *= 0.28;
     c.strokeStyle = win ? '#FFFFFF' : UI; c.lineWidth = win ? 2.6 : 1.4; c.globalAlpha = clamp(al, 0, 1);
     c.beginPath(); c.arc(G.cx, G.cy, rr, 0, TAU); c.stroke();
+    if (win) { c.globalAlpha = 1; c.font = FONT(Math.max(16, 17 * k * 0.9)); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#FFFFFF'; c.lineWidth = 3; c.strokeStyle = 'rgba(3,8,5,.8)'; c.strokeText('+1', G.cx, G.cy - G.coreR * 1.8); c.fillText('+1', G.cx, G.cy - G.coreR * 1.8); }   // the window tell (default off)
     if (V.resFlash > 0) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 3; c.globalAlpha = V.resFlash; c.beginPath(); c.arc(G.cx, G.cy, G.coreR * (1.1 + 0.9 * (1 - V.resFlash)), 0, TAU); c.stroke(); }
     c.globalAlpha = 1;
   }
-  // drag hints: valid merge targets, vent preview, 0.6 s hold ring
+  // drag hints: tether to the pointer, valid fuse targets, vent preview, 0.6 s hold ring
   if (D.active && D.moved && D.b) {
     const b = D.b;
-    for (let i = 0; i < n; i++) {
-      const o = S.sock[i]; if (!o || i === D.i || o.tier !== b.tier || b.tier >= 12) continue;
+    c.strokeStyle = UI; c.lineWidth = 1; c.globalAlpha = 0.35; c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(D.x, D.y); c.stroke();
+    c.globalAlpha = 0.5; c.beginPath(); c.arc(D.x, D.y, 5, 0, TAU); c.stroke();
+    for (const o of S.blobs) {
+      if (o === b || o.tier !== b.tier || b.tier >= 12 || o.hide > 0) continue;
       c.setLineDash([3, 3]); c.strokeStyle = UI; c.lineWidth = 2; c.globalAlpha = 0.6 + 0.3 * Math.sin(now / 90);
-      c.beginPath(); c.arc(G.pos[i].x, G.pos[i].y, Math.min(rOf(o.tier) + 4 * k, G.hmax - 0.5), 0, TAU); c.stroke();
+      c.beginPath(); c.arc(o.x, o.y, o.r + 4 * k, 0, TAU); c.stroke();
     }
     c.setLineDash([]); c.globalAlpha = 1;
     if (D.over) {
       const hold = needsHold(b);
       c.font = FONT(Math.max(17, 18 * k * 0.9)); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#FFFFFF';
-      c.lineWidth = 3; c.strokeStyle = 'rgba(3,8,5,.8)'; const tx2 = ventPreview(b) + (hold ? '' : ' · release'); c.strokeText(tx2, G.cx, G.cy + G.coreR * 2.2); c.fillText(tx2, G.cx, G.cy + G.coreR * 2.2);
+      c.lineWidth = 3; c.strokeStyle = 'rgba(3,8,5,.8)'; const tx2 = ventPreview(b) + (hold ? '' : ' · release'); c.strokeText(tx2, G.cx, G.cy + G.coreR * 2.0); c.fillText(tx2, G.cx, G.cy + G.coreR * 2.0);
       if (hold) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 3; c.beginPath(); c.arc(G.cx, G.cy, G.coreR + 9 * k, -Math.PI / 2, -Math.PI / 2 + TAU * clamp(D.hold / 0.6, 0, 1)); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 1; c.beginPath(); c.arc(G.cx, G.cy, G.coreR + 9 * k, 0, TAU); c.stroke(); }
     }
   }
   // floaters
   c.textAlign = 'center'; c.textBaseline = 'alphabetic';
   for (const f of V.floaters) {
-    if (f.zone !== 'ring') continue;
+    if (f.zone !== 'ch') continue;
     const kk = f.age / f.life; c.globalAlpha = kk < 0.65 ? 1 : 1 - (kk - 0.65) / 0.35;
     c.font = FONT(f.size); const y = f.y - f.age * 22, hw = c.measureText(f.text).width / 2 + 4, fx = clamp(f.x, hw, G.Z - hw);
     c.lineWidth = 3.5; c.strokeStyle = 'rgba(3,8,5,.8)'; c.strokeText(f.text, fx, y);
@@ -1223,10 +1321,10 @@ function drawFly() {
   if (flyc.width !== Math.round(w * d) || flyc.height !== Math.round(h * d)) { flyc.width = Math.round(w * d); flyc.height = Math.round(h * d); }
   fctx.setTransform(d, 0, 0, d, 0, 0); fctx.clearRect(0, 0, w, h); flyDirty = active;
   if (!active) return;
-  const r = $('ringbox').getBoundingClientRect(), t = $('lux').getBoundingClientRect();
+  const r = $('chamber').getBoundingClientRect(), t = $('lux').getBoundingClientRect();
   const sx = r.left + G.cx, sy = r.top + G.cy, tx2 = t.left + t.width / 2, ty = t.top + t.height / 2;
   let cx2 = (sx + tx2) / 2, cy2 = Math.min(sy, ty) - 60;
-  if (S.narrow) { cx2 = r.left - 6; cy2 = (sy + ty) / 2; }              // phone: the counter is below the ring, so the arc leaves beside it (left edge) and drops
+  if (S.narrow) { cx2 = r.left - 6; cy2 = (sy + ty) / 2; }              // phone: the counter is below the chamber, so the arc leaves beside it (left edge) and drops
   const bz = (p, a, b, cc) => (1 - p) * (1 - p) * a + 2 * (1 - p) * p * b + p * p * cc;
   for (const a of V.arcs) if (!a.a) {
     fctx.strokeStyle = UI; fctx.lineWidth = 1; fctx.globalAlpha = 0.55 * (1 - a.age / a.life); fctx.beginPath(); fctx.moveTo(sx, sy); fctx.quadraticCurveTo(cx2, cy2, tx2, ty); fctx.stroke();
@@ -1272,73 +1370,84 @@ const Snd = {
   node() { this.tone(55, 0.4, 'sawtooth', 0.1, 50); this.tone(110, 0.28, 'square', 0.04, 80); this.noise(0.05, 0.07, 2400, 1); },
   sector() { [0, 4, 7, 12].forEach((s, i) => this.tone(262 * Math.pow(2, s / 12), 1.1, 'sine', 0.1, null, i * 0.07)); },
   tier(t) { const f = this.hz(t); [0, 4, 7, 12].forEach((s, i) => this.tone(f * Math.pow(2, s / 12), 0.5, 'triangle', 0.14, null, i * 0.09)); },
-  deny() { this.tone(150, 0.12, 'square', 0.07, 110); }
+  deny() { this.tone(150, 0.12, 'square', 0.07, 110); },
+  bump(t, v, wall) { const f = this.hz(Math.round(clamp(t, 1, 12))) * (wall === 'wall' ? 1 : 2); this.tone(f, 0.055, 'triangle', 0.03 + 0.07 * v, f * 0.82); if (v > 0.55) this.noise(0.02, 0.025 * v, 2600, 1); },   // a soft tick pitched by tier
+  lock() { this.tone(1760, 0.05, 'square', 0.022, 1500); },
+  throw(v) { this.noise(0.1, 0.025 + 0.035 * (v || 1), 900, 0.8); },
+  grab() { this.tone(420, 0.05, 'sine', 0.05, 540); }
 };
 
 // ---------- drag state + input ----------
-const idleD = () => ({ active: false, moved: false, over: false, hold: 0, i: -1, b: null, id: -1, sx: 0, sy: 0, x: 0, y: 0 });
+const idleD = () => ({ active: false, moved: false, over: false, hold: 0, b: null, id: -1, sx: 0, sy: 0, x: 0, y: 0, ts: 0, hist: [] });
 let D = idleD();
-const rb = () => $('ringbox').getBoundingClientRect();
+const cb = () => $('chamber').getBoundingClientRect();
 function stamp(e) { const now = performance.now(), t = e && e.timeStamp; return (t > 0 && Math.abs(t - now) < 2000) ? t : now; }
-function toLocal(e) { const r = rb(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
-const hitR = (i) => Math.max(22, (S.sock[i] ? rOf(S.sock[i].tier) : 0) + 4);          // every socket has a >= 44 px hit circle
-function socketAt(x, y) { let best = -1, bd = 1e9; for (let i = 0; i < S.n; i++) { const d = Math.hypot(x - G.pos[i].x, y - G.pos[i].y); if (d <= hitR(i) && d < bd) { bd = d; best = i; } } return best; }
-const coreHit = () => Math.max(22, G.coreR * 1.25);
-const coreDrop = () => Math.max(G.coreR + 14, 30);
-
-function snapBack(from, msg) {
-  const i = D.i, vb = V.sock[i];
-  if (vb) { vb.dragging = false; vb.away = true; vb.flying = true; const p = G.pos[i]; V.flights.push({ vb, x0: from.x, y0: from.y, x1: p.x, y1: p.y, t: 0, dur: 0.22, ease: backOut, onDone: () => { vb.flying = false; vb.away = false; } }); }
-  if (msg) { floater('near', msg, G.pos[i].x, G.pos[i].y - 24 * G.k, 17, 'dim', { life: 1.1 }); Snd.deny(); log(msg); }
+function toLocal(e) { const r = cb(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+const hitR = (b) => Math.max(22, rOf(b.tier) + 4);                    // every blob has a >= 44 px hit circle
+function blobAt(x, y) {
+  let best = null, bd = 1e9;
+  for (const b of S.blobs) { if (b.hide > 0) continue; const d = Math.hypot(x - b.x, y - b.y); if (d <= hitR(b) && d - b.r < bd) { bd = d - b.r; best = b; } }
+  return best;
 }
+const coreHit = () => Math.max(22, G.coreR * 1.6);
+const coreDrop = () => Math.max(G.coreR * 1.5 + 6, 30);
 function endDrag() { D = idleD(); }
-function dropDrag(x, y) {
-  const i = D.i, b = D.b, from = { x, y }, vb0 = V.sock[i];
-  if (!S.sock[i] || S.sock[i] !== b) { if (vb0) vb0.dragging = false; endDrag(); return; }
-  if (Math.hypot(x - G.cx, y - G.cy) <= coreDrop()) {
-    if (needsHold(b)) { snapBack(from, 'hold 0.6 s to vent'); endDrag(); }
-    else { if (vb0) vb0.dragging = false; endDrag(); ventBlob(i, { from }); }
-    return;
-  }
-  const j = socketAt(x, y);
-  if (j >= 0 && j !== i) {
-    if (!S.sock[j]) { snapBack(from, 'no free moves'); endDrag(); }
-    else { if (vb0) vb0.dragging = false; endDrag(); manualMerge(i, j, { from }); }
-  } else { snapBack(from, null); endDrag(); }
+function pointerVel(upTs) {                                           // pointer velocity over the last ~120 ms of event times (sparser samples reach back to 320 ms); null if unknown
+  const h = D.hist; if (h.length < 2) return null;
+  const last = h[h.length - 1]; if (upTs - last.t > 120) return { x: 0, y: 0 };     // the pointer rested before release: a drop, not a throw
+  let first = last; for (let i = h.length - 2; i >= 0; i--) { if (last.t - h[i].t > 120) break; first = h[i]; }
+  if (first === last) { const p = h[h.length - 2]; if (last.t - p.t <= 320) first = p; }
+  const dt = (last.t - first.t) / 1000; if (dt < 0.006) return null;
+  return { x: (last.x - first.x) / dt, y: (last.y - first.y) / dt };
 }
-function cancelDrag() { if (!D.active) return; const vb = V.sock[D.i]; const from = { x: D.x, y: D.y }; if (vb) snapBack(from, null); endDrag(); }
+function dropDrag(upTs) {
+  const b = D.b, pv = pointerVel(upTs), v = pv || (b ? { x: b.vx, y: b.vy } : { x: 0, y: 0 }), sp = Math.hypot(v.x, v.y), cap = 900, kk = sp > cap ? cap / sp : 1;   // release throws with the pointer velocity, clamped to ~900 px/s
+  const over = Math.hypot(D.x - G.cx, D.y - G.cy) <= coreDrop();
+  if (b) b.held = false;
+  endDrag();
+  if (!b || !S.blobs.includes(b)) return;
+  if (over) {
+    if (needsHold(b)) { floater('near', 'hold 0.6 s to vent', G.cx, topY(), 17, 'dim', { life: 1.1 }); Snd.deny(); log('hold 0.6 s to vent'); }
+    else { ventBlob(b); return; }
+  }
+  b.vx = v.x * kk; b.vy = v.y * kk;
+  if (sp > 160) Snd.throw(Math.min(1, sp / 700));
+}
+function cancelDrag() { if (!D.active) return; const b = D.b; if (b) b.held = false; endDrag(); }
 function dragUpdate(dt) {
   if (!D.active || !D.moved) return;
-  if (S.sock[D.i] !== D.b) { const vb = V.sock[D.i]; if (vb) vb.dragging = false; endDrag(); return; }
+  if (!D.b || !S.blobs.includes(D.b)) { endDrag(); return; }
   D.over = Math.hypot(D.x - G.cx, D.y - G.cy) <= coreDrop();
   if (D.over && needsHold(D.b)) {
     D.hold += dt;
-    if (D.hold >= 0.6) { const i = D.i, from = { x: D.x, y: D.y }; const vb = V.sock[i]; if (vb) vb.dragging = false; endDrag(); ventBlob(i, { from }); }
+    if (D.hold >= 0.6) { const b = D.b; b.held = false; endDrag(); ventBlob(b); }
   } else D.hold = 0;
 }
 glc.addEventListener('pointerdown', (e) => {
   Snd.init();
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   const { x, y } = toLocal(e), ts = stamp(e);                         // keys are bound on document, so the canvas does not need programmatic focus (that drew a :focus-visible frame)
-  // hit priority: glitch (lives in the grid panel, handled on its canvas) > core > socket
+  // hit priority: glitch (lives in the grid panel, handled on its canvas) > core > blob
   if (Math.hypot(x - G.cx, y - G.cy) <= coreHit()) { manualPulse(ts); return; }
-  const i = socketAt(x, y);
-  if (i >= 0 && S.sock[i] && !D.active) {
-    D = Object.assign(idleD(), { active: true, id: e.pointerId, i, b: S.sock[i], sx: x, sy: y, x, y, ts });
+  const b = blobAt(x, y);
+  if (b && !D.active) {
+    D = Object.assign(idleD(), { active: true, id: e.pointerId, b, sx: x, sy: y, x, y, ts, hist: [{ t: ts, x, y }] });
     try { glc.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
   }
 });
 glc.addEventListener('pointermove', (e) => {
   if (!D.active || e.pointerId !== D.id) return;
   const { x, y } = toLocal(e); D.x = x; D.y = y;
-  if (!D.moved && Math.hypot(x - D.sx, y - D.sy) > 8) { D.moved = true; const vb = V.sock[D.i]; if (vb) vb.dragging = true; }   // tap-vs-drag threshold 8 px
+  D.hist.push({ t: stamp(e), x, y }); if (D.hist.length > 24) D.hist.shift();
+  if (!D.moved && Math.hypot(x - D.sx, y - D.sy) > 8 && D.b) {        // tap-vs-drag threshold 8 px: the blob is grabbed
+    D.moved = true; D.b.held = true; D.b.dmn = 0; D.b.man = 0; Snd.grab();
+  }
 });
 function pointerEnd(e, cancelled) {
   if (!D.active || e.pointerId !== D.id) return;
-  const { x, y } = toLocal(e);
   if (cancelled) { cancelDrag(); return; }
-  if (!D.moved) { const i = D.i, ts = D.ts; endDrag(); burstBlob(i, ts); }       // release decides tap vs drag; the PRESS time is judged
-  else dropDrag(x, y);
+  if (!D.moved) { const b = D.b, ts = D.ts; endDrag(); burstBlob(b, ts); }       // release decides tap vs drag; the PRESS time is judged
+  else dropDrag(stamp(e));
 }
 glc.addEventListener('pointerup', (e) => pointerEnd(e, false));
 glc.addEventListener('pointercancel', (e) => pointerEnd(e, true));
@@ -1358,23 +1467,31 @@ gridcv.addEventListener('pointermove', (e) => {                       // hover r
 gridcv.addEventListener('pointerleave', () => { S.hoverTxt = null; });
 
 // keyboard: bound to the physical key (e.code), so a Bulgarian layout works
-const SOCK_KEYS = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5, Digit7: 6, Digit8: 7, Digit9: 8, Digit0: 9, Minus: 10, Equal: 11 };
-function ventKey(i, typed) {
-  const b = S.sock[i]; if (!b) { cmdSay('socket ' + (i + 1) + ' is empty'); return; }
+const angOf = (b) => { let a = Math.atan2(b.x - G.cx, -(b.y - G.cy)); if (a < 0) a += TAU; return a; };   // clockwise from 12 o'clock
+const sortedBlobs = () => S.blobs.filter((b) => b.hide <= 0).sort((a, b) => angOf(a) - angOf(b) || a.id - b.id);
+const selBlob = () => (S.sel ? byId(S.sel) : null);
+function selSay(msg) { const el = $('cmdlive'); el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 30); }
+function selectBlob(b) {
+  S.sel = b ? b.id : 0;
+  if (b) { const L = sortedBlobs(); selSay('blob ' + (L.indexOf(b) + 1) + ' of ' + L.length + ' · tier ' + DIG[b.tier] + ' ' + NAMES[b.tier]); }
+}
+function cycleSel(dir) {
+  const L = sortedBlobs(); if (!L.length) { cmdSay('no blobs in the chamber'); return; }
+  const i = L.findIndex((b) => b.id === S.sel), j = i < 0 ? (dir > 0 ? 0 : L.length - 1) : (i + dir + L.length) % L.length;
+  selectBlob(L[j]);
+}
+function ventKey(b, typed) {
   if (needsHold(b)) {
     const now = performance.now();
-    if (S.ventArm && S.ventArm.i === i && S.ventArm.until > now) { S.ventArm = null; S.sel = -1; ventBlob(i); }
-    else if (typed) { S.ventArm = { i, until: now + 5000 }; cmdSay(ventPreview(b) + ' · type vent ' + (i + 1) + ' again within 5 s'); }
-    else { S.ventArm = { i, until: now + 2000 }; cmdSay(ventPreview(b) + ' · press V again within 2 s'); }
-  } else { S.sel = -1; ventBlob(i); }
+    if (S.ventArm && S.ventArm.id === b.id && S.ventArm.until > now) { S.ventArm = null; S.sel = 0; ventBlob(b); }
+    else if (typed) { S.ventArm = { id: b.id, until: now + 5000 }; cmdSay(ventPreview(b) + ' · type vent again within 5 s'); }
+    else { S.ventArm = { id: b.id, until: now + 2000 }; cmdSay(ventPreview(b) + ' · press V again within 2 s'); }
+  } else { S.sel = 0; ventBlob(b); }
 }
-function socketKey(i) {
-  S.idxUntil = performance.now() + 4500;
-  if (S.sel < 0) { if (!S.sock[i]) { cmdSay('socket ' + (i + 1) + ' is empty'); return; } S.sel = i; return; }
-  if (S.sel === i) { S.sel = -1; return; }
-  const a = S.sel; S.sel = -1;
-  if (!S.sock[i]) { bounce(a, null, 'no free moves'); return; }
-  manualMerge(a, i, {});
+function mergeKey() {
+  const sel = selBlob(), p = closestPair(sel && sel.tier < 12 ? sel : null, false);
+  if (p) { flickTogether(p.a, p.b); cmdSay('flick t' + DIG[p.a.tier] + ' + t' + DIG[p.a.tier] + ' together'); }
+  else cmdSay(sel ? 'no twin for that blob' : 'no pair to merge');
 }
 document.addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -1382,12 +1499,19 @@ document.addEventListener('keydown', (e) => {
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
   const code = e.code, ts = stamp(e);
   if (code === 'Space') { if (tag === 'BUTTON' || tag === 'SUMMARY') return; e.preventDefault(); if (e.repeat) return; Snd.init(); manualPulse(ts); return; }
+  if (code === 'Tab') {                                              // inside the chamber Tab walks the blobs; past the last (or before the first) it lets focus leave: no keyboard trap
+    if (tg !== glc) return;
+    const L = sortedBlobs(), i = L.findIndex((b) => b.id === S.sel), j = i + (e.shiftKey ? -1 : 1);
+    if (L.length && j >= 0 && j < L.length) { e.preventDefault(); selectBlob(L[j]); } else S.sel = 0;
+    return;
+  }
   if (e.repeat) return;
-  if (code in SOCK_KEYS) { Snd.init(); const i = SOCK_KEYS[code]; if (i < S.n) socketKey(i); else cmdSay('socket ' + (i + 1) + ' does not exist at ' + S.n + ' sockets'); return; }
-  if (code === 'Escape') { S.sel = -1; return; }
-  if (code === 'KeyV') { Snd.init(); if (S.sel < 0) cmdSay('select a socket first (1-9, 0, -, =)'); else ventKey(S.sel); return; }
-  if (code === 'KeyB') { Snd.init(); if (S.sel < 0) cmdSay('select a socket first (1-9, 0, -, =)'); else burstBlob(S.sel, ts); return; }
-  if (code === 'KeyM') { Snd.init(); const p = pickPair(false); if (p) manualMerge(p.a, p.b, {}); else cmdSay('no pair to merge'); return; }
+  if (code === 'ArrowRight' || code === 'ArrowDown') { e.preventDefault(); cycleSel(1); return; }
+  if (code === 'ArrowLeft' || code === 'ArrowUp') { e.preventDefault(); cycleSel(-1); return; }
+  if (code === 'Escape') { S.sel = 0; return; }
+  if (code === 'KeyV') { Snd.init(); const b = selBlob(); if (!b) cmdSay('select a blob first (Tab or arrow keys)'); else ventKey(b); return; }
+  if (code === 'KeyB') { Snd.init(); const b = selBlob(); if (!b) cmdSay('select a blob first (Tab or arrow keys)'); else burstBlob(b, ts); return; }
+  if (code === 'KeyM') { Snd.init(); mergeKey(); return; }
   if (code === 'KeyG') { Snd.init(); if (!catchGlitch()) cmdSay('no glitch on the grid'); return; }
 });
 
@@ -1398,12 +1522,17 @@ wireBtn('b-pd', () => runDaemon('pulse')); wireBtn('b-md', () => runDaemon('merg
 function runCmd(raw, ts) {
   const s = raw.trim().toLowerCase().replace(/\s+/g, ' '); if (!s) return;
   const parts = s.split(' '), w = parts[0];
-  if (s === 'help') cmdSay('help: pulse · install amp|cap|fork · run pulse.d|merge.d · vent <n> · look <what>');
+  if (s === 'help') cmdSay('help: pulse · install amp|cap|fork · run pulse.d|merge.d · vent [tier] · look <what>');
   else if (s === 'pulse') manualPulse(ts);
   else if (w === 'install' && ['amp', 'cap', 'fork'].includes(parts[1])) install(({ amp: 'A', cap: 'C', fork: 'F' })[parts[1]]);
   else if (s === 'run pulse.d') runDaemon('pulse');
   else if (s === 'run merge.d') runDaemon('merge');
-  else if (w === 'vent') { const n = parseInt(parts[1], 10); if (n >= 1 && n <= S.n) ventKey(n - 1, true); else cmdSay('vent <1-' + S.n + '>'); }
+  else if (w === 'vent') {                                            // vent the selected blob, or the blob of that tier nearest the core
+    let b = null;
+    if (parts[1]) { const t = parseInt(parts[1], 16); if (t >= 1 && t <= 12) { let bd = 1e9; for (const q of S.blobs) if (q.tier === t && q.hide <= 0) { const d = Math.hypot(q.x - G.cx, q.y - G.cy); if (d < bd) { bd = d; b = q; } } if (!b) { cmdSay('no t' + DIG[t] + ' blob to vent'); return; } } else { cmdSay('vent [tier 1-9, a, b, c]'); return; } }
+    else b = selBlob();
+    if (b) ventKey(b, true); else cmdSay('select a blob (Tab / arrows) or type vent <tier>');
+  }
   else if (w === 'look') lookCmd(parts.slice(1));
   else cmdSay('? ' + s.slice(0, 24) + ' · try help');
 }
@@ -1414,10 +1543,10 @@ function lookCmd(a) {
   else if (x === 'crt') setLook({ crt: y === 'off' ? false : y === 'on' ? true : !S.look.crt });
   else if (x === 'sound') setLook({ sound: y === 'off' ? false : y === 'on' ? true : !S.look.sound });
   else if (x === 'tell') setLook({ tell: y === 'off' ? false : y === 'on' ? true : !S.look.tell });
-  else if (x === 'sockets' && [12, 14, 16].includes(+y)) setSockets(+y);
+  else if ((x === 'buffer' || x === 'sockets') && [12, 14, 16].includes(+y)) setCap(+y);
   else if (x === 'preview' && ['early', 'mid', 'late'].includes(y)) preview(y);
   else if (x === 'calibrate' && !isNaN(+y)) setLook({ calib: clamp(Math.round(+y), -80, 80) });
-  else { cmdSay('look: smooth|hybrid|rainbow|ramp|crt|sound|tell|sockets 12|14|16|preview early|mid|late|calibrate n'); return; }
+  else { cmdSay('look: smooth|hybrid|rainbow|ramp|crt|sound|tell|buffer 12|14|16|preview early|mid|late|calibrate n'); return; }
   log('look ' + a.join(' '));
 }
 $('pf').addEventListener('submit', (e) => { e.preventDefault(); Snd.init(); const inp = $('prompt'), v = inp.value; inp.value = ''; runCmd(v, stamp(e)); });
@@ -1427,7 +1556,7 @@ function setLook(p) {
   Object.assign(S.look, p);
   document.querySelectorAll('[data-k="render"]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === S.look.render)));
   document.querySelectorAll('[data-k="pal"]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === S.look.pal)));
-  document.querySelectorAll('[data-k="n"]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.v === S.n)));
+  document.querySelectorAll('[data-k="n"]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.v === S.cap)));
   document.querySelectorAll('[data-k="pv"]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === S.preview)));
   $('tg-crt').setAttribute('aria-pressed', String(S.look.crt)); $('tg-crt').textContent = 'crt ' + (S.look.crt ? 'on' : 'off');
   $('tg-snd').setAttribute('aria-pressed', String(S.look.sound)); $('tg-snd').textContent = 'sound ' + (S.look.sound ? 'on' : 'off');
@@ -1437,7 +1566,7 @@ function setLook(p) {
 }
 document.querySelectorAll('[data-k]').forEach((b) => b.addEventListener('click', (e) => {
   Snd.init(); const k = b.dataset.k, v = b.dataset.v;
-  if (k === 'render') setLook({ render: v }); else if (k === 'pal') setLook({ pal: v }); else if (k === 'n') setSockets(+v); else if (k === 'pv') preview(v);
+  if (k === 'render') setLook({ render: v }); else if (k === 'pal') setLook({ pal: v }); else if (k === 'n') setCap(+v); else if (k === 'pv') preview(v);
   if (e.detail > 0) b.blur();
 }));
 const blurIfMouse = (e) => { if (e.detail > 0 && e.currentTarget && e.currentTarget.blur) e.currentTarget.blur(); };   // detail 0 = keyboard activation: keep focus for keyboard users
@@ -1452,44 +1581,69 @@ function toggleLook(open) { const el = $('look'); const o = open === undefined ?
 $('look-toggle').addEventListener('click', (e) => { toggleLook(); blurIfMouse(e); });
 $('look-close').addEventListener('click', (e) => { toggleLook(false); if (e.detail > 0) e.currentTarget.blur(); else $('look-toggle').focus(); });
 
-function setSockets(n) {
+// ---------- buffer size ----------
+function setCap(n) {
   n = [12, 14, 16].includes(n) ? n : 12;
-  if (n === S.n) return;                                             // re-clicking the active button does nothing
-  const grew = n > S.n;
-  const old = S.sock.slice(), spare = []; S.n = n; S.sock = new Array(n).fill(null);
-  old.forEach((b, i) => { if (!b) return; if (i < n && !S.sock[i]) S.sock[i] = b; else spare.push(b); });
+  if (n === S.cap) return;                                           // re-clicking the active button does nothing
+  const grew = n > S.cap; S.cap = n;
   let vented = 0, vlx = 0;
-  spare.forEach((b) => { const j = S.sock.indexOf(null); if (j >= 0) S.sock[j] = b; else { vented++; const amt = 15 * prod(b.tier); vlx += amt; gain(amt); } });   // a smaller full ring vents what does not fit: never silent
-  S.sel = -1; D = idleD(); geometry(); syncView(); setLook({});
-  log('ring ' + (grew ? 'grows' : 'shrinks') + ' to ' + n + ' sockets' + (vented ? ' · ' + vented + ' blob' + (vented > 1 ? 's' : '') + ' vented +' + fmt(vlx) + ' lx' : (n > 12 ? ' · sockets 13-' + n + ' are mouse/touch only' : '')));
+  while (S.blobs.length > S.cap) {                                   // a smaller full buffer vents what does not fit, lowest tiers first: never silent
+    let lo = S.blobs[0]; for (const b of S.blobs) if (b.tier < lo.tier) lo = b;
+    const amt = 15 * prod(lo.tier); gain(amt); vlx += amt; vented++; S.blobs = S.blobs.filter((q) => q !== lo);
+  }
+  S.sel = 0; cancelDrag(); setLook({});
+  log('buffer ' + (grew ? 'grows' : 'shrinks') + ' to ' + n + (vented ? ' · ' + vented + ' blob' + (vented > 1 ? 's' : '') + ' vented +' + fmt(vlx) + ' lx' : ''));
 }
 
 // ---------- previews (seeded states) ----------
-const PAT = {
-  early: [3, 0, 1, 2, 0, 1, 0, 0, 2, 0, 1, 0],
-  mid: [5, 3, 0, 4, 6, 0, 3, 5, 0, 4, 3, 6],
-  late: { 12: [11, 9, 11, 10, 8, 11, 9, 10, 11, 8, 11, 10], 14: [11, 9, 10, 11, 8, 9, 11, 10, 8, 11, 9, 10, 11, 8], 16: [11, 9, 10, 11, 8, 9, 11, 10, 8, 11, 9, 10, 11, 8, 10, 9] }
+const PV = {
+  early: { tiers: [3, 1, 2, 1, 2, 1], lux: 4700, lit: 2, top: 3, ever: 3, own: [false, false] },
+  mid: { tiers: [5, 3, 6, 4, 8, 3, 7, 5], lux: 180000, lit: 20, top: 8, ever: 8, own: [true, false] },
+  late: { tiers: [11, 9, 11, 10, 8, 11, 9, 10, 11, 8, 11, 10], lux: 150e6, lit: 100, top: 11, ever: 11, own: [true, false], fullShown: true }
 };
-function fitPattern(p, n) { if (p.length === n) return p.slice(); const o = new Array(n).fill(0); p.forEach((t, i) => { if (!t) return; let j = Math.round(i * n / p.length) % n; while (o[j]) j = (j + 1) % n; o[j] = t; }); return o; }
+const LATE_X = [9, 10, 9, 8];                                         // the 14 / 16 buffers fill up with these on the late preview
 function typeFor(k) { const a = ADDR[k], h = h01(Math.floor((a.x + 8) / 2) * 5 + 1, Math.floor((a.y + 8) / 2) * 7 + 3); return h < 0.5 ? 'A' : h < 0.62 ? 'C' : 'F'; }
-const PV = { early: { lux: 4700, lit: 2, top: 3, ever: 3, own: [false, false] }, mid: { lux: 180000, lit: 20, top: 6, ever: 7, own: [true, false] }, late: { lux: 150e6, lit: 100, top: 11, ever: 11, own: [true, false] } };
-function loadState(tiers, o) {
-  S.n = tiers.length; S.sock = tiers.map((t) => (t ? newBlob(t) : null));
+function populate(list) {                                            // seeded rejection sampling: nobody overlaps, twins start well apart
+  const items = list.map((q) => (typeof q === 'number' ? { tier: q } : Object.assign({}, q)));
+  const pr = mulberry32((S.seed ^ 0x5bd1e995) >>> 0), Ks = G.Ks;
+  const placed = items.filter((q) => q.x !== undefined).map((q) => ({ tier: q.tier, r: rOf(q.tier), x: q.x, y: q.y }));
+  const todo = items.filter((q) => q.x === undefined).sort((a, b) => b.tier - a.tier);
+  for (const q of todo) {
+    const r = rOf(q.tier), lo = G.keep + r + 3, hi = G.Rc - r - 3; let pos = null;
+    for (let pass = 0; pass < 2 && !pos; pass++) for (let n = 0; n < 400 && !pos; n++) {
+      const an = pr() * TAU, rad = clamp(G.Rh + (pr() + pr() - 1) * 0.42 * (G.Rc - G.keep), lo, hi), x = G.cx + Math.cos(an) * rad, y = G.cy + Math.sin(an) * rad;
+      if (placed.every((o) => Math.hypot(o.x - x, o.y - y) >= o.r + r + (o.tier === q.tier ? 12 : 5) * Ks * (pass ? 0.2 : 1))) pos = { x, y };
+    }
+    if (!pos) pos = { x: G.cx + (lo + hi) / 2, y: G.cy };
+    q.x = pos.x; q.y = pos.y; placed.push({ tier: q.tier, r, x: q.x, y: q.y });
+  }
+  return items.map((q) => newBlob(q.tier, q.x, q.y, q.vx || 0, q.vy || 0));
+}
+function settle(sec) {                                               // let a freshly placed field relax with fusing off, silently
+  S.preSettle = true; S.quiet = true;
+  const n = Math.round(sec / DT); for (let i = 0; i < n; i++) physStep();
+  S.preSettle = false; S.quiet = false;
+  for (const b of S.blobs) { b.sq = 0; b.pop = 0; b.shim = 0; b.grow = 1; }
+  V.sparks = []; V.wallHits = []; V.rings = []; V.floaters = []; V.sq = 0; S.acc = 0;
+}
+function loadState(list, o) {
+  S.magnets = []; S.chains = []; S.simT = 0;                           // the physics clock restarts with a fresh field, so a seed reproduces the same drift
+  S.blobs = populate(list.slice(0, S.cap));
   S.lit = o.lit; S.nodes = []; for (let k = 0; k < o.lit; k++) S.nodes[k] = typeFor(k);
   GR.anim = {}; GR.edge.clear(); GR.ver++; recalcTot();
   S.lux = o.lux; S.luxShown = o.lux; S.top = o.top; S.ever = o.ever; S.own = { pulse: !!o.own[0], merge: !!o.own[1] };
-  S.pulseT = 2; S.mergeT = 1; S.judgedCycle = -1e9; S.lastJudge = null; S.sel = -1; S.ventArm = null; S.glitch = null; S.nextGlitch = 7 + rng() * 4;
-  S.fullShown = !!o.fullShown; S.fullA = o.fullShown ? 1 : 0; S.slow = 0; S.hit = 0; S.shake = 0; S.flash = 0; S.banner = null; GR.sweep = 0; GR.tearBurst = 0;
-  D = idleD(); V.floaters = []; V.rings = []; V.sparks = []; V.flies = []; V.arcs = []; V.sq = 0; V.outlineFlash = 0; V.resFlash = 0;
-  geometry(); syncView(); S.rate = prodRate(); Inc.fill(S.rate); S.bloom = bloomTarget(performance.now());
-  S.ghostTier = 1; S.ghost = ghostFor(1);
+  S.pulseT = 3; S.mergeT = 1; S.judgedCycle = -1e9; S.lastJudge = null; S.sel = 0; S.ventArm = null; S.glitch = null; S.nextGlitch = 7 + rng() * 4;
+  S.fullShown = !!o.fullShown; S.fullA = o.fullShown ? 1 : 0; S.slow = 0; S.hit = 0; S.shake = 0; S.flash = 0; S.banner = null; GR.sweep = 0; GR.tearBurst = 0; S.chainMax = 0; S.acc = 0;
+  D = idleD(); V.floaters = []; V.rings = []; V.sparks = []; V.flies = []; V.arcs = []; V.melts = []; V.vents = []; V.wallHits = []; V.sq = 0; V.outlineFlash = 0; V.resFlash = 0;
+  if (!o.noSettle) settle(3);
+  S.rate = prodRate(); Inc.fill(S.rate); S.bloom = bloomTarget(performance.now());
 }
 function preview(name) {
   if (!PV[name]) return false;
   S.preview = name; const o = PV[name];
-  const pat = name === 'late' ? (PAT.late[S.n] || PAT.late[12]) : fitPattern(PAT[name], S.n);
-  const keepN = S.n; loadState(pat.slice(0, keepN), Object.assign({ fullShown: name === 'late' }, o));
-  setLook({}); log('preview ' + name + ' · ' + S.sock.filter(Boolean).length + '/' + S.n + ' blobs · ' + S.lit + ' nodes lit');
+  const tiers = name === 'late' ? o.tiers.concat(LATE_X) : o.tiers;
+  loadState(tiers, Object.assign({}, o));
+  setLook({}); log('preview ' + name + ' · ' + S.blobs.length + '/' + S.cap + ' blobs · ' + S.lit + ' nodes lit');
   return true;
 }
 
@@ -1501,14 +1655,15 @@ function layout() {
   if (S.narrow) { Z = Math.max(220, W - 32); gw = 160; }
   else {
     if (W >= 1440) { tw = gw = 360; }                                 // spec width at >= 1440
-    else if (W >= 1000) { tw = gw = Math.round(clamp(W * 0.25, 300, 330)); }   // 1000-1440: slimmer side columns give the ring (the heart) more room
+    else if (W >= 1000) { tw = gw = Math.round(clamp(W * 0.25, 300, 330)); }   // 1000-1440: slimmer side columns give the chamber (the heart) more room
     else { tw = Math.round(Math.min(360, Math.max(250, W * 0.31))); gw = Math.round(Math.min(360, Math.max(200, W * 0.30))); }
     Z = Math.max(240, Math.min(W - 32 - tw - gw - 32, H - 32));
   }
   document.documentElement.classList.toggle('tight', !S.narrow && tw < 350);
-  Z = Math.floor(Z); S.Z = Z;
+  Z = Math.floor(Z); const oRc = G.Rc, oCx = G.cx; S.Z = Z;
   const st = document.documentElement.style; st.setProperty('--z', Z + 'px'); st.setProperty('--tw', tw + 'px'); st.setProperty('--gw', gw + 'px');
   geometry();
+  if (oRc > 0 && S.blobs.length && Math.abs(G.Rc - oRc) > 0.5) { const f = G.Rc / oRc; for (const b of S.blobs) { b.x = G.cx + (b.x - oCx) * f; b.y = G.cy + (b.y - oCx) * f; b.vx *= f; b.vy *= f; b.r = physR(b); } }   // a resized chamber carries its blobs along
   let sc = S.dpr; if (Z * Z * sc * sc > 1.4e6) sc = Math.sqrt(1.4e6 / (Z * Z)); S.glScale = sc;
   glc.width = Math.round(Z * sc); glc.height = Math.round(Z * sc); ovc.width = Math.round(Z * S.dpr); ovc.height = Math.round(Z * S.dpr);
   makeTargets(glc.width, glc.height);
@@ -1525,12 +1680,12 @@ function pctStr(x) { return (x >= 0 ? '+' : '') + Math.round(x * 100) + '%'; }
 function updateUI(dt) {
   S.luxShown += (S.lux - S.luxShown) * Math.min(1, dt * 8); if (Math.abs(S.lux - S.luxShown) < 0.05) S.luxShown = S.lux;
   uiT -= dt; if (uiT > 0) return; uiT = 0.1;
-  const filled = S.sock.filter(Boolean).length;
+  const filled = S.blobs.length, fullTxt = filled >= S.cap ? ' FULL' : '';
   $('lux').textContent = fmt(S.luxShown); $('rate').textContent = '+' + fmt(S.rate) + ' lx/s';
-  $('sub').textContent = filled + '/' + S.n + ' blobs · top t' + DIG[S.top] + ' ' + NAMES[S.top] + ' · ' + S.lit + '/120 lit';
+  $('sub').textContent = filled + '/' + S.cap + fullTxt + ' blobs · top t' + DIG[S.top] + ' ' + NAMES[S.top] + ' · ' + S.lit + '/120 lit';
   const sec = S.lit >= 120 ? 5 : secOf(S.lit);
   const cap = 'S' + sec + ' · ' + S.lit + '/120'; $('gcap').textContent = S.hoverTxt || cap; $('gcap2').textContent = cap;
-  $('gcap4').textContent = filled + '/' + S.n + ' blobs · top t' + DIG[S.top];
+  $('gcap4').textContent = filled + '/' + S.cap + fullTxt + ' blobs · top t' + DIG[S.top];
   $('gcap3').textContent = S.glitch ? 'glitch! tap it' : (S.lit < 120 ? 'next ' + hex2(S.lit) : 'all online');
   const bn = $('banner'); bn.hidden = !S.banner; if (S.banner) bn.textContent = S.banner;
   const dA = installDelta('A'), dC = installDelta('C'), dF = installDelta('F');
@@ -1559,33 +1714,50 @@ function updateUI(dt) {
   if (S.own.merge) { md.setAttribute('aria-pressed', 'true'); md.setAttribute('aria-disabled', 'false'); $('fx-md').textContent = 'running · 2.0 s'; }
   else { md.setAttribute('aria-pressed', 'false'); md.setAttribute('aria-disabled', String(S.lit < 24 || S.lux < MD_COST)); $('fx-md').textContent = S.lit < 24 ? 'locks: S2 online' : fmt(MD_COST) + ' lx'; }
   // visually hidden summaries for screen readers (not live)
-  const sum = 'Ring of ' + S.n + ' sockets, ' + filled + ' filled. ' + S.sock.map((b, i) => (b ? 'Socket ' + (i + 1) + ' tier ' + DIG[b.tier] + ' ' + NAMES[b.tier] : '')).filter(Boolean).join('; ') + '. Lux ' + fmt(S.lux) + '.';
-  if (sum !== lastSum) { lastSum = sum; $('ringsum').textContent = sum; glc.setAttribute('aria-label', 'Socket ring around a glowing core. Tap the core or press Space to pulse; the first tap of each breath, as the timing ring closes, is resonant. Drag a blob onto a twin to merge, onto the core to vent. Keys 1 to 9, 0, minus and equal select sockets 1 to 12, V vents, B bursts, M merges, G catches a glitch.'); }
+  const cnt = {}; for (const b of S.blobs) cnt[b.tier] = (cnt[b.tier] || 0) + 1;
+  const sum = 'Chamber with ' + filled + ' of ' + S.cap + ' blobs' + (filled >= S.cap ? ', full' : '') + '. ' + Object.keys(cnt).map(Number).sort((a, b) => b - a).map((t) => cnt[t] + ' of tier ' + DIG[t] + ' ' + NAMES[t]).join('; ') + '. Lux ' + fmt(S.lux) + '.';
+  if (sum !== lastSum) {
+    lastSum = sum; $('chsum').textContent = sum;
+    glc.setAttribute('aria-label', 'Chamber of free-floating blobs around a glowing core. Tap the core or press Space to pulse; the first tap of each breath, as the timing ring closes, is resonant. Same-tier blobs that touch fuse. Drag a blob and release to flick it, onto a twin to merge, onto the core to vent. Tab or arrow keys select a blob, V vents, B bursts, M flicks a pair together, G catches a glitch.');
+  }
   const gs = 'Grid: ' + S.lit + ' of 120 addresses lit, sector S' + sec + '.' + (S.glitch ? ' A glitch is visible: tap it or press G.' : '');
   if (gs !== lastGSum) { lastGSum = gs; $('gridsum').textContent = gs; gridcv.setAttribute('aria-label', gs); }
 }
 
 // ---------- debug API ----------
+// Tests: call __lab.pause(true) to freeze the frame loop (it still renders), then __lab.stepPhysics(seconds) advances the 120 Hz physics world deterministically
+// (no economy, no daemons); __lab.advance(seconds) runs whole ticks (economy + daemons + physics) at 60 Hz even while paused.
 function luma(px, o) { const lin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * lin(px[o]) + 0.7152 * lin(px[o + 1]) + 0.0722 * lin(px[o + 2]); }
+function speedAvg() { const L = S.blobs.filter((b) => !b.held); if (!L.length) return 0; let s = 0; for (const b of L) s += Math.hypot(b.vx, b.vy); return s / L.length; }
+function maxOverlap() { const B = S.blobs; let m = 0; for (let i = 0; i < B.length; i++) for (let j = i + 1; j < B.length; j++) m = Math.max(m, B[i].r + B[j].r - Math.hypot(B[i].x - B[j].x, B[i].y - B[j].y)); return m; }
 window.__lab = {
   prof: { gl: 0, ov: 0, grid: 0, rest: 0, n: 0 },
   state() {
     uiT = 0; updateUI(0);
-    const now = performance.now();
+    const now = performance.now(), B = S.blobs, f2 = (v) => +v.toFixed(2);
     return {
-      n: S.n, sockets: S.sock.map((b) => (b ? b.tier : 0)), lux: S.lux, rate: S.rate, rate30: Inc.rate(), lit: S.lit, top: S.top, ever: S.ever,
+      blobs: B.map((b) => ({ cid: b.cid, tier: b.tier, x: f2(b.x), y: f2(b.y), vx: f2(b.vx), vy: f2(b.vy), id: b.id, r: f2(b.r), held: b.held, melting: b.hide > 0, daemon: b.dmn > S.simT })),
+      count: B.length, cap: S.cap, lux: S.lux, rate: S.rate, rate30: Inc.rate(), top: S.top, ever: S.ever, chainMax: S.chainMax, chainActive: S.chains.length ? Math.max(...S.chains.map((c) => c.c)) : 0, chains: S.chains.map((c) => ({ id: c.id, c: c.c, steps: c.steps, age: +(S.simT - c.last).toFixed(3), auto: c.auto })),
+      lit: S.lit, speedAvg: speedAvg(), maxOverlap: maxOverlap(), simT: S.simT, paused: S.paused,
       breathPhase: (now / P_MS) % 1, cycleSpent: S.judgedCycle === Math.round((now - S.look.calib) / P_MS), windowOpen: windowOpen(now),
-      glitch: S.glitch ? { x: S.glitch.x, y: S.glitch.y, age: S.glitch.age } : null, ghost: S.ghost.i, ghostTier: S.ghostTier, ghostFuse: S.ghost.fuse,
-      full: isFull(), fullShown: S.fullShown, spills: S.spills, pulses: S.pulses, merges: S.merges, own: Object.assign({}, S.own), mult: S.tot.mult, forkChance: S.tot.fork,
-      pulseInterval: pulseInterval(), nextCost: S.lit < 120 ? COST[S.lit] : null, sector: S.lit >= 120 ? 5 : secOf(S.lit), nodes: S.nodes.slice(0, S.lit).join(''),
-      floaters: V.floaters.length, rings: V.rings.length, sparks: V.sparks.length + V.flies.length, flashes: S.flashes.length, viewLag: Math.max(0, V.end - V.t), opsNext: V.ops.length ? +(V.ops[0].at - V.t).toFixed(3) : 0, selected: S.sel,
-      geometry: { Z: G.Z, R: G.R, k: G.k, pitch: G.pitch, gapTC: gapTC(S.n), gapTC16: gapTC(16), coreR: G.coreR, narrow: S.narrow },
-      look: Object.assign({}, S.look), lastJudge: S.lastJudge, rest: S.sock.map((b) => (b ? +b.rest.toFixed(2) : 0)), preview: S.preview, seed: S.seed, reduce, bloom: S.bloom, viewSockets: V.sock.map((v) => (v ? v.vt : 0)), flights: V.flights.length, opsPending: V.ops.length, hover: S.hoverTxt || null, narrow: S.narrow, drag: D.active, dragMoved: D.moved, dragHold: D.hold, banner: S.banner, cmdlive: document.getElementById('cmdlive').textContent, nextText: document.getElementById('next').textContent, ventArm: !!S.ventArm, slow: S.slow, shake: S.shake, hit: S.hit, flash: S.flash, log: logLines.slice(), floaterTexts: V.floaters.map((f) => f.kind + ':' + f.text)
+      glitch: S.glitch ? { x: S.glitch.x, y: S.glitch.y, age: S.glitch.age } : null,
+      full: isFull(), fullShown: S.fullShown, spills: S.spills, pulses: S.pulses, merges: S.merges, fuses: S.fuses, own: Object.assign({}, S.own), mult: S.tot.mult, forkChance: S.tot.fork,
+      magnets: S.magnets.length, pulseInterval: pulseInterval(), nextCost: S.lit < 120 ? COST[S.lit] : null, sector: S.lit >= 120 ? 5 : secOf(S.lit), nodes: S.nodes.slice(0, S.lit).join(''),
+      floaters: V.floaters.length, rings: V.rings.length, sparks: V.sparks.length + V.flies.length, flashes: S.flashes.length, melts: V.melts.length, selected: S.sel,
+      geometry: { Z: G.Z, R: G.R, Rc: G.Rc, Rh: G.Rh, keep: G.keep, pipR: G.pipR, k: G.k, coreR: G.coreR, narrow: S.narrow },
+      look: Object.assign({}, S.look), lastJudge: S.lastJudge, rest: B.map((b) => f2(b.rest)), preview: S.preview, seed: S.seed, reduce, bloom: S.bloom, hover: S.hoverTxt || null, narrow: S.narrow,
+      drag: D.active, dragMoved: D.moved, dragHold: D.hold, banner: S.banner, cmdlive: document.getElementById('cmdlive').textContent, nextText: document.getElementById('next').textContent, ventArm: !!S.ventArm, slow: S.slow, shake: S.shake, hit: S.hit, flash: S.flash, log: logLines.slice(), floaterTexts: V.floaters.map((f) => f.kind + ':' + f.text)
     };
   },
+  speedAvg,
+  maxOverlap,
   preview(name) { return preview(name); },
-  setSockets(n) { setSockets(n); return S.n; },
-  seed(n) { S.seed = n; rng = mulberry32(n | 0); return n; },
+  setCap(n) { setCap(n); return S.cap; },
+  setSockets(n) { setCap(n); return S.cap; },                         // v3 name, kept so old scripts keep working
+  seed(n) { S.seed = n; rng = mulberry32(n | 0); S.simT = 0; S.acc = 0; return n; },
+  pause(on) { S.paused = on !== false; return S.paused; },
+  stepPhysics(sec) { const n = Math.round(sec / DT); for (let i = 0; i < n; i++) physStep(); return speedAvg(); },
+  advance(sec) { const n = Math.round(sec * 60); for (let i = 0; i < n; i++) tick(1 / 60); return this.state(); },
   tapCoreAt(offSec) {
     return new Promise((resolve) => {
       const now = performance.now(); let tp = Math.ceil((now + 120) / P_MS) * P_MS, at = tp + offSec * 1000;
@@ -1594,19 +1766,22 @@ window.__lab = {
     });
   },
   // test helpers
-  setRing(tiers, o) { loadState(tiers.slice(0, S.n).concat(new Array(Math.max(0, S.n - tiers.length)).fill(0)), Object.assign({ lux: S.lux, lit: S.lit, top: Math.max(...tiers, 1), ever: Math.max(...tiers, S.ever), own: [S.own.pulse, S.own.merge] }, o || {})); return this.state().sockets; },
+  setBlobs(list, o) { loadState(list, Object.assign({ lux: S.lux, lit: S.lit, top: Math.max(...list.map((q) => (typeof q === 'number' ? q : q.tier)), 1), ever: S.ever, own: [S.own.pulse, S.own.merge], noSettle: list.some((q) => typeof q !== 'number') }, o || {})); S.ever = Math.max(S.ever, S.top); return this.state().blobs; },
+  setRing(list, o) { return this.setBlobs(list, o); },
+  spawn(tier, x, y, vx, vy) { const b = newBlob(tier, x, y, vx || 0, vy || 0); S.blobs.push(b); noteTier(tier); return b.id; },
+  flick(i, vx, vy) { const b = S.blobs[i]; if (!b) return false; b.vx = vx; b.vy = vy; return true; },
+  squash(i, ang, m) { const b = S.blobs[i]; if (!b) return false; b.sq = 1; b.sqm = m === undefined ? 1 : m; b.sqa = ang || 0; return true; },
   pulse(ts) { return manualPulse(ts === undefined ? performance.now() : ts); },
-  merge(a, b) { return manualMerge(a, b, {}); },
-  vent(i) { return ventBlob(i); },
-  burst(i, ts) { burstBlob(i, ts === undefined ? performance.now() : ts); },
-  blob(i) { const b = S.sock[i]; return b ? { tier: b.tier, per: b.per, t0: b.t0, rest: b.rest } : null; },
+  merge(a, b) { const A = S.blobs[a], B = S.blobs[b]; return A && B && A.tier === B.tier ? flickTogether(A, B) : false; },
+  vent(i) { return ventBlob(S.blobs[i]); },
+  burst(i, ts) { burstBlob(S.blobs[i], ts === undefined ? performance.now() : ts); },
+  blob(i) { const b = S.blobs[i]; return b ? { tier: b.tier, per: b.per, t0: b.t0, rest: b.rest, x: b.x, y: b.y } : null; },
   setLux(x) { S.lux = x; S.luxShown = x; },
   glitchNow() { spawnGlitch(); return S.glitch; },
   install(t) { return install(t); },
-  flush() { flushView(); },
-  advance(sec) { const n = Math.round(sec * 60); for (let i = 0; i < n; i++) tick(1 / 60); return this.state(); },
-  sockPos(i) { const r = rb(); return { x: r.left + G.pos[i].x, y: r.top + G.pos[i].y }; },
-  corePos() { const r = rb(); return { x: r.left + G.cx, y: r.top + G.cy }; },
+  flush() { S.chains.forEach(endChain); S.chains = []; },
+  blobPos(i) { const r = cb(), b = S.blobs[i]; return b ? { x: r.left + b.x, y: r.top + b.y, r: b.r } : null; },
+  corePos() { const r = cb(); return { x: r.left + G.cx, y: r.top + G.cy }; },
   gridGlitchPos() { const r = gridcv.parentElement.getBoundingClientRect(); return S.glitch ? { x: r.left + S.glitch.x * r.width / GR.size, y: r.top + S.glitch.y * r.height / GR.size } : null; },
   lum() {
     if (!gl) return null;
@@ -1614,20 +1789,20 @@ window.__lab = {
     const W = glc.width, H = glc.height, px = new Uint8Array(W * H * 4); gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, px);
     let sum = 0, hot = 0; for (let i = 0; i < W * H; i++) { const y = luma(px, i * 4); sum += y; if (y > 0.8) hot++; }
     const inkY = 0.00413, per = []; let minC = 99;
-    for (let i = 0; i < S.n; i++) {
-      const b = S.sock[i], vb = V.sock[i]; if (!b || !vb || vb.flying || vb.dragging || vb.grow < 1 || vb.pop > 0.02 || vb.melt > 0 || vb.alpha < 1) continue;
-      const r = rOf(vb.vt), sz = digitSize(r, 1), hw = 0.17 * sz, hh = 0.29 * sz, cx = G.pos[i].x * S.glScale, cy = G.pos[i].y * S.glScale; let mn = 9;
+    for (const b of S.blobs) {
+      if (b.hide > 0 || b.grow < 1 || b.pop > 0.02 || b.alpha < 1 || b.sq > 0) continue;
+      const r = rOf(b.tier), sz = digitSize(r, 1), hw = 0.17 * sz, hh = 0.29 * sz, cx = b.x * S.glScale, cy = b.y * S.glScale; let mn = 9;
       for (const [ox, oy] of [[0, 0], [-hw, -hh], [hw, -hh], [-hw, hh], [hw, hh], [0, -hh], [0, hh], [-hw, 0], [hw, 0]]) { const x = Math.round(cx + ox * S.glScale), y = H - 1 - Math.round(cy + oy * S.glScale); mn = Math.min(mn, luma(px, (y * W + x) * 4)); }
-      const c = (mn + 0.05) / (inkY + 0.05); per.push({ i, tier: vb.vt, minY: +mn.toFixed(3), contrast: +c.toFixed(2) }); minC = Math.min(minC, c);
+      const c = (mn + 0.05) / (inkY + 0.05); per.push({ id: b.id, tier: b.tier, minY: +mn.toFixed(3), contrast: +c.toFixed(2) }); minC = Math.min(minC, c);
     }
     return { mean: sum / (W * H), frac08: hot / (W * H), minDigitContrast: minC, per };
   }
 };
 
 // ---------- auto-exposure ----------
-const BLOOM_HI = 0.54, BLOOM_LO = 0.19, BLOOM_SLOPE = 1.0;           // floor 0.19 (was 0.08), slope 2/3 of the old 1.5: sparse rings glow, a full late ring stays calm
-function bloomTarget(now) {                                          // body light is constant now, so the exposure target is steady (no breathing wobble)
-  let ls = 0; for (let i = 0; i < S.n; i++) { const b = S.sock[i]; if (!b) continue; const r = rOf(b.tier); ls += r * r * 0.85; }
+const BLOOM_HI = 0.54, BLOOM_LO = 0.12, BLOOM_SLOPE = 1.4;           // free blobs can cluster and their blooms add up, so the slope is steeper than v3's ring: a sparse field glows, a crowded late field stays calm
+function bloomTarget(now) {                                          // body light is constant, so the exposure target is steady (no breathing wobble)
+  let ls = 0; for (const b of S.blobs) { const r = rOf(b.tier); ls += r * r * 0.85; }
   return clamp(BLOOM_HI - BLOOM_SLOPE * ls / (G.R * G.R), BLOOM_LO, BLOOM_HI);
 }
 // ---------- main loop ----------
@@ -1636,15 +1811,15 @@ function tick(dt) {
   let vdt = dt; if (S.slow > 0) { vdt *= 0.3; S.slow -= dt; }
   if (S.hit > 0) { S.hit -= dt; vdt = 0; }
   if (S.ventArm && S.ventArm.until < performance.now()) S.ventArm = null;
-  if (S.sel >= 0 && !S.sock[S.sel]) S.sel = -1;
-  dragUpdate(dt); viewUpdate(vdt, dt);
+  if (S.sel && !byId(S.sel)) S.sel = 0;
+  dragUpdate(dt); runPhysics(vdt); viewUpdate(vdt, dt);
 }
 let last = performance.now();
 function frame() {
   const now = performance.now(); const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
-  tick(dt);
+  if (!S.paused) tick(dt);
   const L = buildList(now);
-  S.dtFrame = dt; S.bloom += (bloomTarget(now) - S.bloom) * Math.min(1, dt * 3);                 // auto-exposure: the fuller / brighter the ring, the less bloom
+  S.dtFrame = dt; S.bloom += (bloomTarget(now) - S.bloom) * Math.min(1, dt * 3);                 // auto-exposure: the fuller / brighter the field, the less bloom
   const q0 = performance.now(); renderGL(L); const q1 = performance.now(); drawOverlay(L, now); const q2 = performance.now(); drawGrid(now); const q3 = performance.now(); drawFly(); updateUI(dt); announceTick();
   const pf = window.__lab.prof; pf.gl += q1 - q0; pf.ov += q2 - q1; pf.grid += q3 - q2; pf.rest += performance.now() - q3; pf.n++;
   if (S.shake > 0.05 && !reduce) { const s = S.shake, t = 'translate(' + ((Math.random() - 0.5) * 2 * s).toFixed(1) + 'px,' + ((Math.random() - 0.5) * 2 * s).toFixed(1) + 'px)'; $('shake').style.transform = t; gridcv.style.transform = t; }
